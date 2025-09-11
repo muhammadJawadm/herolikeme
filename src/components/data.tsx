@@ -5,6 +5,7 @@ import { HiOutlineDocumentText } from "react-icons/hi";
 export const sidebarLinks = [
   { name: "Dashboard", path: "/", icon: <MdDashboardCustomize /> },
   { name: "Users", path: "/users", icon: <FaUsers /> },
+  { name: "Matches", path: "/matches", icon: <MdSubscriptions /> },
   { name: "Quotes", path: "/quotes", icon: <FaQuoteLeft /> },
   { name: "Feedback", path: "/feedback", icon: <FaRegCommentDots /> },
   { name: "Discussions", path: "/discussion", icon: <FaComments /> },

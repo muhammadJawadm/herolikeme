@@ -13,6 +13,7 @@ import Feedback from './pages/Feedback/Feedback'
 import Discussions from './pages/Discussions/Discussions'
 import Subscription from './pages/Subscription/Subscription'
 import Payment from './pages/Payments/Payment'
+import Matches from './pages/Matches/Matches'
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
     <Route path={"/payment"} element={<Payment />} />
     <Route path={"/quotes"} element={<Quotes />} />
     <Route path={"/discussion"} element={<Discussions />} />
+    <Route path={"/matches"} element={<Matches />} />
       <Route path={"/content"} element={<Content />} />
       <Route path={"/subscriptions"} element={<Subscription />} />
     </Route>

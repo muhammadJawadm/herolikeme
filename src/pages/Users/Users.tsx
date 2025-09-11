@@ -46,7 +46,7 @@ const Users:React.FC = () => {
 ]
   return (
      <div>
-      <Header header={"Manage Users"} link='' />
+      <Header header={"Manage Matches"} link='' />
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-6">
       
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
