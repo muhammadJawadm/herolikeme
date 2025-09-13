@@ -11,6 +11,7 @@ export const sidebarLinks = [
   { name: "Discussions", path: "/discussion", icon: <FaComments /> },
   { name: "Subscriptions", path: "/subscriptions", icon: <MdSubscriptions /> },
   { name: "Payments", path: "/payment", icon: <MdPayment /> },
+  { name: "Ads", path: "/ads", icon: <FaComments /> },
   { name: "Content", path: "/content", icon: <HiOutlineDocumentText /> },
 ];
 export const transactionsReports = [
