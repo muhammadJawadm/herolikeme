@@ -44,7 +44,7 @@ const ChartOne = ({ monthlyData}:ChartsProps ) => {
   return (
     <div className="flex flex-col gap-5 w-full">
       <h3 className="text-lg font-semibold leading-6">
-        Users Growth Analytics
+        Users Behaviour Analytics
       </h3>
       <div className="chart-container w-full h-[300px] sm:h-[400px] md:h-[500px] relative">
         <Line

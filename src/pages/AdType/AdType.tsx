@@ -74,8 +74,6 @@ const AdType = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-
-            {/* Add Ad Button */}
             <button
               onClick={() => setShowModal(true)}
               className="px-4 py-2 bg-secondary cursor-pointer text-white rounded-lg shadow"
