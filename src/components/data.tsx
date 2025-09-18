@@ -1,5 +1,5 @@
 
-import { MdDashboardCustomize,  MdSubscriptions, MdPayment, } from "react-icons/md";
+import { MdDashboardCustomize,  MdSubscriptions, MdPayment, MdNotifications, } from "react-icons/md";
 import {  FaUsers,FaQuoteLeft ,FaRegCommentDots, FaComments} from "react-icons/fa";
 import { HiOutlineDocumentText } from "react-icons/hi";
 export const sidebarLinks = [
@@ -10,6 +10,7 @@ export const sidebarLinks = [
   { name: "Feedback", path: "/feedback", icon: <FaRegCommentDots /> },
   { name: "Discussions", path: "/discussion", icon: <FaComments /> },
   { name: "Subscriptions", path: "/subscriptions", icon: <MdSubscriptions /> },
+  { name: "Notifications", path: "/notifications", icon: <MdNotifications /> },
   { name: "Payments", path: "/payment", icon: <MdPayment /> },
   { name: "Ads", path: "/ads", icon: <FaComments /> },
   { name: "Content", path: "/content", icon: <HiOutlineDocumentText /> },

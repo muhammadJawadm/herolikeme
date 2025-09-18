@@ -15,6 +15,7 @@ import Subscription from './pages/Subscription/Subscription'
 import Payment from './pages/Payments/Payment'
 import Matches from './pages/Matches/Matches'
 import AdType from './pages/AdType/AdType'
+import Notifications from './pages/Notifications/Notifications'
 
 function App() {
 
@@ -30,6 +31,7 @@ function App() {
     <Route path={"/ads"} element={<AdType />} />
     <Route path={"/discussion"} element={<Discussions />} />
     <Route path={"/matches"} element={<Matches />} />
+    <Route path={"/notifications"} element={<Notifications />} />
       <Route path={"/content"} element={<Content />} />
       <Route path={"/subscriptions"} element={<Subscription />} />
     </Route>
