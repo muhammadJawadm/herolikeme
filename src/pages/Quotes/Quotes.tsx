@@ -1,33 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import QuoteAddModal from "../../components/QuoteAddModal";
+import QuoteDeleteModal from "../../components/QuoteDeleteModal";
 import Header from "../../layouts/partials/Header"
 import { FiSearch } from "react-icons/fi";
+import type { Quote } from "../../services/quoteServices";
+import { fetchQuotes } from "../../services/quoteServices";
+
 const Quotes = () => {
-    const[modalOpen,setModalOpen] = useState(false)
+    const [addModalOpen, setAddModalOpen] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [selectedQuoteId, setSelectedQuoteId] = useState<number | null>(null);
+    const [selectedQuoteData, setSelectedQuoteData] = useState<Quote | undefined>();
     const [searchTerm, setSearchTerm] = useState("");
-      const quotes = [
-    {
-      id: 1,
-      author: "Albert Einstein",
-      text: "Life is like riding a bicycle. To keep your balance, you must keep moving.",
-      category: "Inspirational",
-      status: "Approved",
-    },
-    {
-      id: 2,
-      author: "Oscar Wilde",
-      text: "Be yourself; everyone else is already taken.",
-      category: "Philosophy",
-      status: "Pending",
-    },
-    {
-      id: 3,
-      author: "Maya Angelou",
-      text: "You will face many defeats in life, but never let yourself be defeated.",
-      category: "Motivational",
-      status: "Rejected",
-    },
-  ];
+    const [quotes, setQuotes] = useState<Quote[]>([]);
+
+    const refreshQuotes = async () => {
+      const data = await fetchQuotes();
+      setQuotes(data);
+    };
+
+    const openDeleteModal = (quoteId: number) => {
+      setDeleteModalOpen(true);
+      setSelectedQuoteId(quoteId);
+    };
+
+    const openEditModal = (quote: Quote) => {
+      setEditModalOpen(true);
+      setSelectedQuoteData(quote);
+    };
+
+    useEffect(() => {
+      refreshQuotes();
+    }, [])
+
 
   return (
    <div>
@@ -48,7 +54,7 @@ const Quotes = () => {
                                />
                              </div>
                                <button
-          onClick={()=>setModalOpen(true)}
+          onClick={()=>setAddModalOpen(true)}
           className="px-4 py-2 rounded-lg bg-secondary text-white cursor-pointer">
             + Add Quote
           </button>
@@ -58,37 +64,41 @@ const Quotes = () => {
           <table className="w-full text-sm text-left text-gray-600 rounded-lg overflow-hidden shadow-sm">
             <thead className="text-xs font-semibold text-gray-700 uppercase bg-gray-100/80 backdrop-blur-sm">
               <tr>
+                <th className="px-6 py-3">ID</th>
                 <th className="px-6 py-3">Author</th>
                 <th className="px-6 py-3">Quote</th>
                 <th className="px-6 py-3">Category</th>
-                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Created At</th>
                 <th className="px-6 py-3">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200/60">
               {quotes.map((quote) => (
-                <tr key={quote.id}>
-                  <td className="px-6 py-4">{quote.author}</td>
-                  <td className="px-6 py-4 max-w-xs truncate">{quote.text}</td>
-                  <td className="px-6 py-4">{quote.category}</td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full ${
-                        quote.status === "Approved"
-                          ? "bg-green-100 text-green-700"
-                          : quote.status === "Pending"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {quote.status}
-                    </span>
+                <tr key={quote.id} className="bg-white hover:bg-gray-50 transition-colors duration-150 ease-in-out">
+                  <td className="px-6 py-4 text-gray-700 font-medium">{quote.id}</td>
+                  <td className="px-6 py-4 text-gray-800 font-medium">{quote.author}</td>
+                  <td className="px-6 py-4 max-w-md">
+                    <p className="line-clamp-2 text-gray-700">{quote.text}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <button className="text-blue-600 hover:underline mr-3">
+                    <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                      {quote.category}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {new Date(quote.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </td>
+                  <td className="px-6 py-4">
+                    <button onClick={()=>openEditModal(quote)} className="text-blue-600 hover:text-blue-800 hover:underline mr-3 font-medium">
                       Edit
                     </button>
-                    <button className="text-red-600 hover:underline">
+                    <button 
+                      onClick={() => openDeleteModal(quote.id)}
+                      className="text-red-600 hover:text-red-800 hover:underline font-medium">
                       Delete
                     </button>
                   </td>
@@ -99,8 +109,34 @@ const Quotes = () => {
         </div>
       </div>
 
-    {modalOpen && <QuoteAddModal setModalOpen={setModalOpen} modalOpen={modalOpen} /> }
-     
+    {addModalOpen && (
+      <QuoteAddModal 
+        setModalOpen={setAddModalOpen} 
+        modalOpen={addModalOpen} 
+        isUpdate={false}
+        refreshQuotes={refreshQuotes}
+      /> 
+    )}
+
+    {editModalOpen && (
+      <QuoteAddModal 
+        setModalOpen={setEditModalOpen} 
+        modalOpen={editModalOpen} 
+        isUpdate={true}
+        quoteData={selectedQuoteData}
+        refreshQuotes={refreshQuotes}
+      /> 
+    )}
+
+    {deleteModalOpen && (
+      <QuoteDeleteModal 
+        setModalOpen={setDeleteModalOpen} 
+        modalOpen={deleteModalOpen} 
+        quoteId={selectedQuoteId} 
+        refreshQuotes={refreshQuotes}
+      /> 
+    )}
+              
     </div>
   )
 }

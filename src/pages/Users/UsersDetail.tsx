@@ -1,104 +1,104 @@
-import { useState } from "react";
-import Header from "../../layouts/partials/Header"
-import { MicIcon, PlayIcon } from "../../components/Icons";
+import { useEffect, useState } from "react";
+import Header from "../../layouts/partials/Header";
+import { fetchUserById } from '../../services/usersServices';
+import type { User } from '../../services/usersServices';
+import { useParams } from "react-router-dom";
+import { 
+  fetchSelfieVerificationByUserId, 
+  updateSelfieVerificationStatus, 
+  type SelfieVerification 
+} from "../../services/selfieVerificationServices";
+import ProfileHeader from "../../components/UserProfile/ProfileHeader";
+import InfoCard from "../../components/UserProfile/InfoCard";
+import SelfieVerificationSection from "../../components/UserProfile/SelfieVerificationSection";
+import StatusUpdateModal from "../../components/UserProfile/StatusUpdateModal";
+import GallerySection from "../../components/UserProfile/GallerySection";
+import VoiceMessageSection from "../../components/UserProfile/VoiceMessageSection";
 
-interface User {
-  profilePicture: string;
-  name: string;
-  email: string;
-  status: string;
-  phoneNumber: string;
-  contact: string;
-  age: number;
-  gender: string;
-  wantToMeet: string;
-  goal: string;
-  zipCode: string;
-  address: string;
-  impactedByCancer: boolean;
-  impactedByChronicConditions: boolean;
-  images: string[];
-  voiceMessage: string[];
-  bio:string;
-  interests:string[]
-}
-const mockUser: User = {
-  profilePicture: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-  name: "Jane Smith",
-  email: "jane.smith@example.com",
-  status: "Active",
-  phoneNumber: "+1 (555) 123-4567",
-  contact: "Email preferred",
-  age: 32,
-  gender: "Female",
-  wantToMeet: "Friends with similar interests",
-  goal: "Build meaningful connections",
-  zipCode: "90210",
-  address: "123 Main St, Beverly Hills, CA",
-  impactedByCancer: true,
-  impactedByChronicConditions: false,
-   bio: "Passionate about technology and community building. Love connecting with people and learning new things every day.",
-  interests: ["Traveling", "Photography", "Fitness", "Cooking", "Reading"],
-  images: [
-    "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    "https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=500&q=60"
-  ],
-  voiceMessage: ["voice-message-url"]
-};
+
+
 const UsersDetail = () => {
- const [user] = useState<User>(mockUser);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const { id } = useParams();
+  const [user, setUser] = useState<User>();
+  const [selfieVerification, setSelfieVerification] = useState<SelfieVerification | null>(null);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [newStatus, setNewStatus] = useState<'pending' | 'verified' | 'rejected'>('pending');
+  const [adminNote, setAdminNote] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  useEffect(() => {
+    // console.log("User ID from params:", id);
+    const getUser = async () => {
+      if (id) {
+        const data = await fetchUserById(id);
+        if (data) {
+          setUser(data);
+          console.log("Fetched user:", data);
+        }
+      }
+    };
+    
+    const getSelfieVerification = async () => {
+      if (id) {
+        console.log("Fetching selfie verification for user ID:", id);
+        const data = await fetchSelfieVerificationByUserId(id);
+        console.log("Selfie verification data:", data);
+        if (data) {
+          setSelfieVerification(data);
+          setAdminNote(data.admin_note || "");
+        } else {
+          console.log("No selfie verification found for this user");
+          setSelfieVerification(null);
+        }
+      }
+    };
+    
+    getUser();
+    getSelfieVerification();
+  }, [id]);
+  
+  const openStatusModal = () => {
+    if (selfieVerification) {
+      setNewStatus(selfieVerification.status);
+      setAdminNote(selfieVerification.admin_note || "");
+      setShowStatusModal(true);
+    }
+  };
+  
+  const handleStatusUpdate = async () => {
+    if (!selfieVerification) return;
+    
+    setIsUpdating(true);
+    const result = await updateSelfieVerificationStatus(
+      selfieVerification.id,
+      newStatus,
+      adminNote
+    );
+    
+    if (result) {
+      setSelfieVerification(result);
+      setShowStatusModal(false);
+    }
+    setIsUpdating(false);
+  };
+  
+  const handleCloseModal = () => {
+    setShowStatusModal(false);
+    if (selfieVerification) {
+      setNewStatus(selfieVerification.status);
+      setAdminNote(selfieVerification.admin_note || "");
+    }
+  };
+  
+
   return (
-<div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <Header header={"Manage Users"} link="" />
       
-     <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-6">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-6">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Profile Header */}
-          <div className="bg-gradient-to-r from-primary/10 p-6 md:p-8">
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="relative">
-                <img
-                  src={user.profilePicture}
-                  alt={user.name}
-                  className="w-32 h-32 md:w-36 md:h-36 rounded-full object-cover border-4 border-white shadow-lg"
-                />
-                <div className="absolute bottom-2 right-2">
-                  <span className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
-                    user.status === "Active" 
-                      ? "bg-green-500 text-white" 
-                      : "bg-red-500 text-white"
-                  }`}>
-                    {user.status === "Active" ? "✓" : "✗"}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="text-center md:text-left">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-800">{user.name}</h2>
-                <p className="text-gray-600 mt-1">{user.email}</p>
-                
-                <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    user.status === "Active"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {user.status}
-                  </span>
-                  
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                    {user.age} years
-                  </span>
-                  
-                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                    {user.gender}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ProfileHeader user={user} />
 
           {/* Main Content */}
           <div className="p-6 md:p-8">
@@ -107,7 +107,7 @@ const UsersDetail = () => {
               <h3 className="text-xl font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">
                 Bio
               </h3>
-              <p className="text-gray-700 leading-relaxed">{user.bio}</p>
+              <p className="text-gray-700 leading-relaxed">{user?.short_bio}</p>
             </div>
 
             {/* Interests Section */}
@@ -115,142 +115,78 @@ const UsersDetail = () => {
               <h3 className="text-xl font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">
                 Interests
               </h3>
-              <div className="flex flex-wrap gap-2">
-                {user.interests.map((interest: string, idx: number) => (
-                  <span
-                    key={idx}
-                    className="px-3 py-1 bg-pink-50 text-secondary rounded-full text-sm font-medium"
-                  >
-                    {interest}
-                  </span>
-                ))}
-              </div>
+              {user?.interests && user.interests.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {user.interests.map((interest: string, index: number) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-sm font-medium"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">No interests added yet</p>
+              )}
             </div>
+
+            {/* Personal Information */}
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">Personal Information</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <div className="flex flex-col p-4 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500 font-medium">Phone</span>
-                  <span className="text-gray-800">{user.phoneNumber}</span>
-                </div>
-                
-                <div className="flex flex-col p-4 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500 font-medium">Preferred Contact</span>
-                  <span className="text-gray-800">{user.contact}</span>
-                </div>
-                
-                <div className="flex flex-col p-4 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500 font-medium">Looking For</span>
-                  <span className="text-gray-800">{user.wantToMeet}</span>
-                </div>
-                
-                <div className="flex flex-col p-4 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500 font-medium">Goal</span>
-                  <span className="text-gray-800">{user.goal}</span>
-                </div>
-                
-                <div className="flex flex-col p-4 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500 font-medium">Zip Code</span>
-                  <span className="text-gray-800">{user.zipCode}</span>
-                </div>
-                
-                <div className="flex flex-col p-4 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500 font-medium">Address</span>
-                  <span className="text-gray-800">{user.address}</span>
-                </div>
-                
-                <div className="flex flex-col p-4 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500 font-medium">Impacted by Cancer</span>
-                  <span className={`font-medium ${user.impactedByCancer ? 'text-green-600' : 'text-red-600'}`}>
-                    {user.impactedByCancer ? "Yes" : "No"}
-                  </span>
-                </div>
-                
-                <div className="flex flex-col p-4 bg-gray-50 rounded-lg">
-                  <span className="text-sm text-gray-500 font-medium">Impacted by Chronic Conditions</span>
-                  <span className={`font-medium ${user.impactedByChronicConditions ? 'text-green-600' : 'text-red-600'}`}>
-                    {user.impactedByChronicConditions ? "Yes" : "No"}
-                  </span>
-                </div>
+                <InfoCard label="First Name" value={user?.first_name} />
+                <InfoCard label="Last Name" value={user?.last_name} />
+                <InfoCard label="Date of Birth" value={user?.dob ? new Date(user.dob).toLocaleDateString() : undefined} />
+                <InfoCard label="Login Via" value={user?.login_via || "email"} />
+                <InfoCard label="Looking For" value={user?.who_to_meet} />
+                <InfoCard label="Goal" value={user?.your_goal} />
+                <InfoCard label="Country" value={user?.country} />
+                <InfoCard label="Zip Code" value={user?.zip_code} />
+                <InfoCard label="Address" value={user?.address} />
+                <InfoCard label="Language" value={user?.language} />
+                <InfoCard label="Measurement Unit" value={user?.measurement_unit} />
+                <InfoCard label="Max Distance" value={user?.max_distance ? `${user.max_distance} miles` : undefined} />
+                <InfoCard label="Search Whole World" value={user?.is_whole_world} />
+                <InfoCard label="Impacted by Cancer" value={user?.is_cancer} />
+                <InfoCard label="Impacted by Chronic Conditions" value={user?.is_other_chronic} />
+                <InfoCard label="Show Last Active" value={user?.show_last_active} />
+                <InfoCard label="FCM Notifications" value={user?.fcm_enabled} />
+                <InfoCard label="Last Seen" value={user?.last_seen ? new Date(user.last_seen).toLocaleString() : undefined} />
+                <InfoCard label="Account Created" value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : undefined} />
+                <InfoCard label="Last Updated" value={user?.last_updated ? new Date(user.last_updated).toLocaleDateString() : undefined} />
               </div>
             </div>
+
+            {/* Selfie Verification Section */}
+            <SelfieVerificationSection
+              selfieVerification={selfieVerification}
+              onOpenStatusModal={openStatusModal}
+            />
 
             {/* Gallery Section */}
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">Gallery</h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {user.images.map((img, idx) => (
-                  <div 
-                    key={idx} 
-                    className="relative group cursor-pointer overflow-hidden rounded-lg shadow-md"
-                    onClick={() => setSelectedImage(img)}
-                  >
-                    <img
-                      src={img}
-                      alt={`User Image ${idx + 1}`}
-                      className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-opacity-80 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                      <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        View
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <GallerySection images={user?.profile_images} />
 
             {/* Voice Message Section */}
-            {user.voiceMessage.length > 0 && (
-              <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">Voice Message</h3>
-                
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 flex items-center">
-                  <div className="flex-shrink-0 bg-blue-100 p-3 rounded-full mr-4">
-                    <MicIcon />
-                  </div>
-                  <div className="flex-grow">
-                    <p className="text-gray-700">Voice message available</p>
-                    <div className="mt-2 flex items-center">
-                      <div className="h-2 bg-blue-200 rounded-full w-full mr-3">
-                        <div className="h-2 bg-primary rounded-full" style={{ width: '70%' }}></div>
-                      </div>
-                      <span className="text-sm text-gray-500">2:45</span>
-                    </div>
-                  </div>
-                  
-                  <button className="ml-4 bg-primary text-white p-2 rounded-full">
-                    <PlayIcon />
-                  </button>
-                </div>
-              </div>
-            )}
+            <VoiceMessageSection audioUrl={user?.audio} />
           </div>
         </div>
       </div>
-
-      {/* Image Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setSelectedImage(null)}>
-          <div className="max-w-4xl max-h-full">
-            <img 
-              src={selectedImage} 
-              alt="Enlarged view" 
-              className="max-w-full max-h-full object-contain"
-            />
-          </div>
-          <button 
-            className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2"
-            onClick={() => setSelectedImage(null)}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-      )}
+      
+      {/* Status Update Modal */}
+      <StatusUpdateModal
+        isOpen={showStatusModal}
+        selfieVerification={selfieVerification}
+        user={user}
+        newStatus={newStatus}
+        adminNote={adminNote}
+        isUpdating={isUpdating}
+        onClose={handleCloseModal}
+        onStatusChange={setNewStatus}
+        onAdminNoteChange={setAdminNote}
+        onUpdate={handleStatusUpdate}
+      />
     </div>
   )
 }

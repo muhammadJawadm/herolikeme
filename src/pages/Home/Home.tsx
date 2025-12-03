@@ -1,74 +1,302 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaCommentDots, FaQuoteLeft, FaRegCommentDots, FaUser } from "react-icons/fa";
 import Header from "../../layouts/partials/Header";
 import ChartOne from "../../components/ChartOne";
 import { MdPayment, MdSubscriptions } from "react-icons/md";
 import PieChartBox from "../../components/PieChartBox";
-interface MonthlyBookingData{
-    users:number[],
-    earnings:number[]
+import { fetchUsers } from "../../services/usersServices";
+import { fetchQuotes } from "../../services/quoteServices";
+import { fetchFeedback } from "../../services/feedbackServices";
+import { fetchCommunities } from "../../services/communityServices";
+import { fetchNotifications } from "../../services/notificationServices";
+
+interface MonthlyBookingData {
+  users: number[];
+  earnings: number[];
 }
-const Home:React.FC = () => {
 
-   const [monthlyData] = useState<MonthlyBookingData>({
- users: [120, 190, 170, 220, 300, 280, 350, 400, 380, 450, 500, 600],
-    earnings: [2400, 3800, 3400, 4400, 6000, 5600, 7000, 8000, 7600, 9000, 10000, 12000],
-});
-    const [diseaseData] = useState({
-    labels: ["Cancer", "Diabetes", "Heart Disease", "Asthma", "Other"],
-    values: [40, 25, 20, 10, 5],
+interface DashboardStats {
+  totalUsers: number;
+  totalQuotes: number;
+  totalFeedback: number;
+  totalDiscussions: number;
+  totalNotifications: number;
+  premiumUsers: number;
+  onlineUsers: number;
+  completedProfiles: number;
+}
+
+const Home: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    totalQuotes: 0,
+    totalFeedback: 0,
+    totalDiscussions: 0,
+    totalNotifications: 0,
+    premiumUsers: 0,
+    onlineUsers: 0,
+    completedProfiles: 0,
   });
 
-  const [countryData] = useState({
-    labels: ["USA", "UK", "Pakistan", "India", "Germany", "Other"],
-    values: [120, 90, 70, 60, 40, 30],
+  const [monthlyData, setMonthlyData] = useState<MonthlyBookingData>({
+    users: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    earnings: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   });
-const [ageData] = useState({
-  labels: ["18-25", "26-35", "36-45", "46-60", "60+"],
-  values: [120, 200, 150, 80, 40],
-});
+
+  const [diseaseData, setDiseaseData] = useState({
+    labels: ["Cancer", "Chronic Conditions", "Others"],
+    values: [0, 0, 0],
+  });
+
+  const [countryData, setCountryData] = useState({
+    labels: [] as string[],
+    values: [] as number[],
+  });
+
+  const [ageData, setAgeData] = useState({
+    labels: [] as string[],
+    values: [] as number[],
+  });
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    try {
+      // Fetch all data
+      const [users, quotes, feedback, communities, notifications] = await Promise.all([
+        fetchUsers(),
+        fetchQuotes(),
+        fetchFeedback(),
+        fetchCommunities(),
+        fetchNotifications(),
+      ]);
+
+      // Calculate basic stats
+      setStats({
+        totalUsers: users.length,
+        totalQuotes: quotes.length,
+        totalFeedback: feedback.length,
+        totalDiscussions: communities.length,
+        totalNotifications: notifications.length,
+        premiumUsers: users.filter(u => u.is_premium).length,
+        onlineUsers: users.filter(u => u.is_online).length,
+        completedProfiles: users.filter(u => u.is_profile_complete).length,
+      });
+
+      // Process monthly user registration data
+      const monthlyUsers = Array(12).fill(0);
+      users.forEach(user => {
+        const month = new Date(user.created_at).getMonth();
+        monthlyUsers[month]++;
+      });
+
+      // Calculate earnings (premium users * estimated subscription cost)
+      const monthlyEarnings = monthlyUsers.map((_, index) => {
+        const premiumCount = users.filter(u => {
+          const userMonth = new Date(u.created_at).getMonth();
+          return userMonth === index && u.is_premium;
+        }).length;
+        return premiumCount * 10; // Assuming $10 per premium user
+      });
+
+      setMonthlyData({
+        users: monthlyUsers,
+        earnings: monthlyEarnings,
+      });
+
+      // Process disease data
+      const cancerCount = users.filter(u => u.is_cancer).length;
+      const chronicCount = users.filter(u => u.is_other_chronic).length;
+      const othersCount = users.length - cancerCount - chronicCount;
+
+      setDiseaseData({
+        labels: ["Cancer", "Chronic Conditions", "Others"],
+        values: [cancerCount, chronicCount, othersCount],
+      });
+
+      // Process country data
+      const countryMap = new Map<string, number>();
+      users.forEach(user => {
+        if (user.country) {
+          countryMap.set(user.country, (countryMap.get(user.country) || 0) + 1);
+        }
+      });
+
+      const sortedCountries = Array.from(countryMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      setCountryData({
+        labels: sortedCountries.map(([country]) => country),
+        values: sortedCountries.map(([, count]) => count),
+      });
+
+      // Process age data
+      const ageMap = new Map<string, number>();
+      users.forEach(user => {
+        if (user.age_range) {
+          ageMap.set(user.age_range, (ageMap.get(user.age_range) || 0) + 1);
+        }
+      });
+
+      const sortedAges = Array.from(ageMap.entries()).sort((a, b) => {
+        // Sort by age range start
+        const aStart = parseInt(a[0].split('-')[0]);
+        const bStart = parseInt(b[0].split('-')[0]);
+        return aStart - bStart;
+      });
+
+      setAgeData({
+        labels: sortedAges.map(([age]) => age),
+        values: sortedAges.map(([, count]) => count),
+      });
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header header={"Dashboard"} link="" />
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading dashboard data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-  <div className="min-h-screen bg-gray-50">
-  <Header header={"Dashboard"} link="" />
+    <div className="min-h-screen bg-gray-50">
+      <Header header={"Dashboard"} link="" />
 
-  <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-8">
-    {/* Cards Section */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-      <Card title="Users" count="03" icon={FaUser} link="/users" percentage="+12%" />
-      <Card title="Quotes" count="03" icon={FaQuoteLeft} link="/products" percentage="+5%" />
-      <Card title="Feedback" count="03" icon={FaRegCommentDots} link="/posts" percentage="+8%" />
-      <Card title="Discussions" count="03" icon={FaCommentDots} link="/reels" percentage="+8%" />
-      <Card title="Subscription" count="03" icon={MdSubscriptions} link="/payment" percentage="+8%" />
-      <Card title="Payments" count="03" icon={MdPayment} link="/payment" percentage="+8%" />
-    </div>
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+        {/* Cards Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+          <Card 
+            title="Total Users" 
+            count={stats.totalUsers.toString()} 
+            icon={FaUser} 
+            link="/users" 
+            subtitle={`${stats.onlineUsers} online`}
+          />
+          <Card 
+            title="Quotes" 
+            count={stats.totalQuotes.toString()} 
+            icon={FaQuoteLeft} 
+            link="/quotes" 
+            subtitle="Total quotes"
+          />
+          <Card 
+            title="Feedback" 
+            count={stats.totalFeedback.toString()} 
+            icon={FaRegCommentDots} 
+            link="/feedback" 
+            subtitle="User feedback"
+          />
+          <Card 
+            title="Communities" 
+            count={stats.totalDiscussions.toString()} 
+            icon={FaCommentDots} 
+            link="/discussion" 
+            subtitle="Discussions"
+          />
+          <Card 
+            title="Premium Users" 
+            count={stats.premiumUsers.toString()} 
+            icon={MdSubscriptions} 
+            link="/users" 
+            subtitle={`${((stats.premiumUsers / stats.totalUsers) * 100).toFixed(1)}% of total`}
+          />
+          <Card 
+            title="Notifications" 
+            count={stats.totalNotifications.toString()} 
+            icon={MdPayment} 
+            link="/notifications" 
+            subtitle="Total sent"
+          />
+        </div>
 
-    {/* Charts Section */}
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Line Chart (Main Chart, larger span) */}
-      <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-        <ChartOne monthlyData={monthlyData} />
+        {/* Additional Stats Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-100 text-sm font-medium mb-1">Online Users</p>
+                <h3 className="text-3xl font-bold">{stats.onlineUsers}</h3>
+              </div>
+              <div className="bg-white/20 rounded-full p-3">
+                <FaUser className="w-6 h-6" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-100 text-sm font-medium mb-1">Completed Profiles</p>
+                <h3 className="text-3xl font-bold">{stats.completedProfiles}</h3>
+              </div>
+              <div className="bg-white/20 rounded-full p-3">
+                <FaUser className="w-6 h-6" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-100 text-sm font-medium mb-1">Profile Completion Rate</p>
+                <h3 className="text-3xl font-bold">
+                  {stats.totalUsers > 0 ? ((stats.completedProfiles / stats.totalUsers) * 100).toFixed(1) : 0}%
+                </h3>
+              </div>
+              <div className="bg-white/20 rounded-full p-3">
+                <FaUser className="w-6 h-6" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Line Chart (Main Chart, larger span) */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+            <ChartOne monthlyData={monthlyData} />
+          </div>
+
+          {/* Side Pie Charts */}
+          <div className="flex flex-col gap-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+              <PieChartBox title="Health Conditions" chartData={diseaseData} />
+            </div>
+            {countryData.labels.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <PieChartBox title="Top Countries" chartData={countryData} />
+              </div>
+            )}
+            {ageData.labels.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                <PieChartBox title="Age Distribution" chartData={ageData} />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
-      {/* Side Pie Charts */}
-      <div className="flex flex-col gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <PieChartBox title="User Diseases" chartData={diseaseData} />
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <PieChartBox title="User Countries" chartData={countryData} />
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-          <PieChartBox title="User Age Statistics" chartData={ageData} />
-        </div>
-      </div>
     </div>
-
-  </div>
-</div>
-
-  )
+  );
 }
 
 export default Home
@@ -77,31 +305,24 @@ interface CardProps {
   count: string;
   icon: React.ElementType;
   link: string;
-  percentage: string;
+  subtitle?: string;
 }
-const Card = ({ title, count, icon: Icon, link, percentage }: CardProps) => (
+
+const Card = ({ title, count, icon: Icon, link, subtitle }: CardProps) => (
   <Link to={link} className="w-full block transition-transform duration-300 hover:scale-[1.02]">
     <div className="rounded-xl bg-white p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden relative">
-      {/* Background decorative element */}
-      
-      
-      <div className="flex items-center justify-between mb-6 relative z-10">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 shadow-sm">
-          <Icon className="w-5 h-5 text-primary" />
+      <div className="flex items-center justify-between mb-4 relative z-10">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 shadow-sm">
+          <Icon className="w-6 h-6 text-primary" />
         </div>
-        
-        <span className={`flex items-center gap-1 text-sm font-semibold px-2 py-1 rounded-full ${
-          percentage?.includes('-') 
-            ? 'text-[#C00402] bg-red-100/70' 
-            : 'text-green-600 bg-green-100/70'
-        }`}>
-          {percentage?.includes('-') ? '↓' : '↑'} {percentage}
-        </span>
       </div>
       
       <div className="relative z-10">
-        <h4 className="text-2xl font-bold text-gray-900 mb-1">{count}</h4>
-        <span className="text-sm font-medium text-gray-600 tracking-wide">{title}</span>
+        <h4 className="text-3xl font-bold text-gray-900 mb-1">{count}</h4>
+        <span className="text-sm font-semibold text-gray-700 tracking-wide block mb-1">{title}</span>
+        {subtitle && (
+          <span className="text-xs text-gray-500">{subtitle}</span>
+        )}
       </div>
       
       {/* Subtle hover indicator */}

@@ -1,16 +1,33 @@
 import React, { useState } from "react";
 import { PiBellLight } from "react-icons/pi";
 import { RiCloseFill } from "react-icons/ri";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { IoArrowBack } from "react-icons/io5";
+import { FiLogOut } from "react-icons/fi";
+import { signOut } from "../../services/authServices";
+
 interface Headerprops {
     header : string, 
     link: string,
     arrow?:boolean
 }
+
 const Header: React.FC <Headerprops>= ({ header, link, arrow }) => {
+    const navigate = useNavigate();
     const [drop, setDrop] = useState(false);
     const [showMenue, setShowMenue] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
+
+    const handleLogout = async () => {
+      setLoggingOut(true);
+      const { error } = await signOut();
+      if (!error) {
+        navigate('/login');
+      } else {
+        console.error('Logout error:', error);
+        setLoggingOut(false);
+      }
+    };
   return (
     <div>
     <div className="bg-white">
@@ -48,9 +65,23 @@ const Header: React.FC <Headerprops>= ({ header, link, arrow }) => {
                     src="https://images.pexels.com/photos/1499327/pexels-photo-1499327.jpeg?auto=compress&cs=tinysrgb&w=1600"
                     alt="profile"
                   />
-                  <span className="hidden sm:block">Jane Doe</span>
+                  <span className="hidden sm:block">Admin</span>
                 </div>
               </button>
+              
+              {/* Dropdown Menu */}
+              {drop && (
+                <div className="absolute right-0 mt-12 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
+                  <button
+                    onClick={handleLogout}
+                    disabled={loggingOut}
+                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <FiLogOut className="text-red-500" />
+                    <span>{loggingOut ? 'Logging out...' : 'Logout'}</span>
+                  </button>
+                </div>
+              )}
             </div>
           
           </div>

@@ -2,17 +2,22 @@
 import { MdDashboardCustomize,  MdSubscriptions, MdPayment, MdNotifications, } from "react-icons/md";
 import {  FaUsers,FaQuoteLeft ,FaRegCommentDots, FaComments} from "react-icons/fa";
 import { HiOutlineDocumentText } from "react-icons/hi";
+import { FiDownload } from "react-icons/fi";
+import { BiSupport } from "react-icons/bi";
+
 export const sidebarLinks = [
   { name: "Dashboard", path: "/", icon: <MdDashboardCustomize /> },
   { name: "Users", path: "/users", icon: <FaUsers /> },
-  { name: "Matches", path: "/matches", icon: <MdSubscriptions /> },
+  { name: "Categories", path: "/categories", icon: <MdSubscriptions /> },
   { name: "Quotes", path: "/quotes", icon: <FaQuoteLeft /> },
   { name: "Feedback", path: "/feedback", icon: <FaRegCommentDots /> },
   { name: "Discussions", path: "/discussion", icon: <FaComments /> },
+  { name: "Download Requests", path: "/download-requests", icon: <FiDownload /> },
+  { name: "Support Questions", path: "/support-questions", icon: <BiSupport /> },
   { name: "Subscriptions", path: "/subscriptions", icon: <MdSubscriptions /> },
   { name: "Notifications", path: "/notifications", icon: <MdNotifications /> },
   { name: "Payments", path: "/payment", icon: <MdPayment /> },
-  { name: "Ads", path: "/ads", icon: <FaComments /> },
+  // { name: "Ads", path: "/ads", icon: <FaComments /> },
   { name: "Content", path: "/content", icon: <HiOutlineDocumentText /> },
 ];
 export const transactionsReports = [
