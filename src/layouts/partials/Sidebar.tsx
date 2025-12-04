@@ -3,13 +3,27 @@ import {
   RiLogoutCircleLine,
   RiCloseFill,
 } from "react-icons/ri";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import Logo from '../../assets/logo.svg';
 import { useState } from "react";
 import { sidebarLinks } from "../../components/data";
+import { signOut } from "../../services/authServices";
 
 const Sidebar:React.FC = () => {
     const [showMenu, setShowMenu] = useState(false);
+    const [loggingOut, setLoggingOut] = useState(false);
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+      setLoggingOut(true);
+      const { error } = await signOut();
+      if (!error) {
+        navigate('/login');
+      } else {
+        console.error('Logout error:', error);
+        setLoggingOut(false);
+      }
+    };
 
   return (
     <>
@@ -77,13 +91,14 @@ const Sidebar:React.FC = () => {
 
           {/* Logout */}
           <div className="mt-6">
-            <Link
-              to="/login"
-              className="flex items-center px-4 py-2 rounded-lg bg-primary/10 text-gray-700 hover:bg-primary/20"
+            <button
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="w-full flex items-center px-4 py-2 rounded-lg bg-primary/10 text-gray-700 hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RiLogoutCircleLine className="text-lg" />
-              <span className="ml-2">Logout</span>
-            </Link>
+              <span className="ml-2">{loggingOut ? 'Logging out...' : 'Logout'}</span>
+            </button>
           </div>
         </div>
       </aside>
