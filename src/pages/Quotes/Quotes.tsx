@@ -5,7 +5,7 @@ import Header from "../../layouts/partials/Header"
 import { FiSearch } from "react-icons/fi";
 import type { Quote } from "../../services/quoteServices";
 import { fetchQuotes } from "../../services/quoteServices";
-import { fetchCategories, type CategoryGroup } from "../../services/categoryServices";
+// import { fetchCategories, type CategoryGroup } from "../../services/categoryServices";
 
 const Quotes = () => {
     const [addModalOpen, setAddModalOpen] = useState(false);
