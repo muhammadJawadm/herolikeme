@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { addQuote, updateQuote, type Quote } from "../services/quoteServices";
+import { fetchCategories, type CategoryGroup } from "../services/categoryServices";
 
 interface QuoteAddModalProps {
   modalOpen: boolean;
@@ -10,12 +11,14 @@ interface QuoteAddModalProps {
 }
 
 const QuoteAddModal = ({
+  
   setModalOpen,
   modalOpen,
   isUpdate,
   quoteData,
   refreshQuotes
 }: QuoteAddModalProps) => {
+  const [categories, setCategories] = useState<CategoryGroup[]>([]);
   const [formData, setFormData] = useState({
     author: "",
     category: "",
@@ -24,6 +27,12 @@ const QuoteAddModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+
+  const fetchCategory = async() => {
+      const data = await fetchCategories();
+      setCategories(data);
+    }
+    
   // Populate form if editing
   useEffect(() => {
     if (isUpdate && quoteData) {
@@ -33,6 +42,7 @@ const QuoteAddModal = ({
         text: quoteData.text
       });
     }
+    fetchCategory();
   }, [isUpdate, quoteData]);
 
   if (!modalOpen) return null;
@@ -118,15 +128,20 @@ const QuoteAddModal = ({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Category <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
+            <select
               name="category"
               value={formData.category}
-              onChange={handleChange}
-              placeholder="Enter category (e.g., Motivation, Inspiration)"
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isSubmitting}
-            />
+            >
+              <option value="">Select a category</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.title}>
+                  {category.title}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

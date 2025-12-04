@@ -5,6 +5,7 @@ import Header from "../../layouts/partials/Header"
 import { FiSearch } from "react-icons/fi";
 import type { Quote } from "../../services/quoteServices";
 import { fetchQuotes } from "../../services/quoteServices";
+import { fetchCategories, type CategoryGroup } from "../../services/categoryServices";
 
 const Quotes = () => {
     const [addModalOpen, setAddModalOpen] = useState(false);
@@ -13,6 +14,7 @@ const Quotes = () => {
     const [selectedQuoteId, setSelectedQuoteId] = useState<number | null>(null);
     const [selectedQuoteData, setSelectedQuoteData] = useState<Quote | undefined>();
     const [searchTerm, setSearchTerm] = useState("");
+    
     const [quotes, setQuotes] = useState<Quote[]>([]);
 
     const refreshQuotes = async () => {
@@ -20,6 +22,7 @@ const Quotes = () => {
       setQuotes(data);
     };
 
+    
     const openDeleteModal = (quoteId: number) => {
       setDeleteModalOpen(true);
       setSelectedQuoteId(quoteId);
