@@ -16,11 +16,26 @@ const Sidebar:React.FC = () => {
 
     const handleLogout = async () => {
       setLoggingOut(true);
-      const { error } = await signOut();
-      if (!error) {
-        navigate('/login');
-      } else {
-        console.error('Logout error:', error);
+      try {
+        const { error } = await signOut();
+        
+        // Always navigate to login, even if there's a session error
+        // because the session might already be expired
+        if (error && error !== 'Auth session missing!') {
+          console.error('Logout error:', error);
+        }
+        
+        // Clear any local storage or state if needed
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Navigate to login
+        navigate('/login', { replace: true });
+      } catch (err) {
+        console.error('Unexpected logout error:', err);
+        // Still navigate to login on error
+        navigate('/login', { replace: true });
+      } finally {
         setLoggingOut(false);
       }
     };

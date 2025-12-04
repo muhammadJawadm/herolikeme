@@ -30,8 +30,15 @@ export const signInWithEmail = async (email: string, password: string) => {
  */
 export const signOut = async () => {
   try {
+    // Clear local session first
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    
+    // Even if there's an error (like missing session), we should clear local state
+    // and return success to allow the user to navigate to login
+    if (error && error.message !== 'Auth session missing!') {
+      throw error;
+    }
+    
     return { error: null };
   } catch (error: any) {
     console.error('Error signing out:', error);

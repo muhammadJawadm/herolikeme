@@ -1,19 +1,41 @@
 import { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
-import { getCurrentSession } from '../services/authServices';
+import { Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { getCurrentSession, onAuthStateChange } from '../services/authServices';
 
 const ProtectedRoute = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkAuth();
-  }, []);
+
+    // Listen for auth state changes
+    const { data: { subscription } } = onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, !!session);
+      
+      if (event === 'SIGNED_OUT' || !session) {
+        setIsAuthenticated(false);
+        navigate('/login', { replace: true });
+      } else if (event === 'SIGNED_IN' && session) {
+        setIsAuthenticated(true);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   const checkAuth = async () => {
     const { session } = await getCurrentSession();
     setIsAuthenticated(!!session);
     setIsLoading(false);
+
+    // If no session, redirect to login
+    if (!session) {
+      navigate('/login', { replace: true });
+    }
   };
 
   if (isLoading) {
