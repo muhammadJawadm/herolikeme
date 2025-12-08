@@ -14,6 +14,7 @@ import { fetchNotifications } from "../../services/notificationServices";
 interface MonthlyBookingData {
   users: number[];
   earnings: number[];
+  premiumUsers?: number[];
 }
 
 interface DashboardStats {
@@ -88,25 +89,25 @@ const Home: React.FC = () => {
         completedProfiles: users.filter(u => u.is_profile_complete).length,
       });
 
-      // Process monthly user registration data
+      // Process monthly user registration data - separate regular and premium
       const monthlyUsers = Array(12).fill(0);
+      const monthlyPremiumUsers = Array(12).fill(0);
+      
       users.forEach(user => {
         const month = new Date(user.created_at).getMonth();
         monthlyUsers[month]++;
+        if (user.is_premium) {
+          monthlyPremiumUsers[month]++;
+        }
       });
 
       // Calculate earnings (premium users * estimated subscription cost)
-      const monthlyEarnings = monthlyUsers.map((_, index) => {
-        const premiumCount = users.filter(u => {
-          const userMonth = new Date(u.created_at).getMonth();
-          return userMonth === index && u.is_premium;
-        }).length;
-        return premiumCount * 10; // Assuming $10 per premium user
-      });
+      const monthlyEarnings = monthlyPremiumUsers.map(count => count * 10);
 
       setMonthlyData({
         users: monthlyUsers,
         earnings: monthlyEarnings,
+        premiumUsers: monthlyPremiumUsers,
       });
 
       // Process disease data
@@ -186,18 +187,18 @@ const Home: React.FC = () => {
         {/* Cards Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           <Card 
-            title="Total Users" 
+            title="New Users This week" 
             count={stats.totalUsers.toString()} 
             icon={FaUser} 
             link="/users" 
             subtitle={`${stats.onlineUsers} online`}
           />
           <Card 
-            title="Quotes" 
-            count={stats.totalQuotes.toString()} 
-            icon={FaQuoteLeft} 
-            link="/quotes" 
-            subtitle="Total quotes"
+            title="Total Users" 
+            count={stats.totalUsers.toString()} 
+            icon={FaUser} 
+            link="/users" 
+            subtitle={`${stats.onlineUsers} online`}
           />
           <Card 
             title="Feedback" 
@@ -214,7 +215,7 @@ const Home: React.FC = () => {
             subtitle="Discussions"
           />
           <Card 
-            title="Premium Users" 
+            title="New Premium Users This week" 
             count={stats.premiumUsers.toString()} 
             icon={MdSubscriptions} 
             link="/users" 

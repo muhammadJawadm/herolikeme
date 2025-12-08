@@ -216,6 +216,8 @@ const AdType = () => {
                   <th className="px-4 py-3 text-left">Image</th>
                   <th className="px-4 py-3 text-left">Title</th>
                   <th className="px-4 py-3 text-left">Description</th>
+                  <th className="px-4 py-3 text-left">Impressions</th>
+                  <th className="px-4 py-3 text-left">Click Rates</th>
                   <th className="px-4 py-3 text-left">Created At</th>
                   <th className="px-4 py-3 text-center">Action</th>
                 </tr>
@@ -223,7 +225,7 @@ const AdType = () => {
               <tbody className="divide-y divide-gray-200/60">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center">
+                    <td colSpan={8} className="px-6 py-8 text-center">
                       <div className="flex justify-center items-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                         <span className="ml-3 text-gray-500">Loading ads...</span>
@@ -250,6 +252,12 @@ const AdType = () => {
                           {ad.description || "N/A"}
                         </p>
                       </td>
+                      <td className="px-6 py-4 text-gray-700 font-medium">
+                        {ad.impressions?.toLocaleString() || 0}
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 font-medium">
+                        {ad.click_rates?.toFixed(2) || 0}%
+                      </td>
                       <td className="px-6 py-4 text-gray-600">
                         {new Date(ad.created_at).toLocaleDateString("en-US", {
                           year: "numeric",
@@ -275,7 +283,7 @@ const AdType = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                       No ads found
                     </td>
                   </tr>

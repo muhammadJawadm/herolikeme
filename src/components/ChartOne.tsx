@@ -6,17 +6,44 @@ Chart.register(CategoryScale);
 type ChartsProps = {
   monthlyData: {
     users: number[];
+    premiumUsers?: number[];
   };
 };
 const ChartOne = ({ monthlyData}:ChartsProps ) => {
-    const { users } = monthlyData;
+    const { users, premiumUsers } = monthlyData;
 
   const [chartData, setChartData] = useState({
     labels: [
       "January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December",
     ],
-    datasets: [
+    datasets: premiumUsers ? [
+      {
+        label: "Total Users",
+        data: users,
+        backgroundColor: "rgba(120, 151, 255, 0.2)",
+        borderColor: "#7897FF",
+        borderWidth: 2,
+        tension: 0.3,
+        fill: true,
+      },
+      {
+        label: "Premium Users",
+        data: premiumUsers,
+        backgroundColor: "rgba(255, 215, 0, 0.3)",
+        borderColor: "#FFD700",
+        borderWidth: 3,
+        tension: 0.3,
+        fill: true,
+        pointBackgroundColor: "#FFD700",
+        pointBorderColor: "#FFA500",
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: "#FFD700",
+        pointHoverBorderColor: "#FF8C00",
+      },
+    ] : [
       {
         label: "Users",
         data: users,
@@ -30,16 +57,32 @@ const ChartOne = ({ monthlyData}:ChartsProps ) => {
   });
 
   useEffect(() => {
-    setChartData((prevData) => ({
-      ...prevData,
-      datasets: [
-        {
-          ...prevData.datasets[0],
-          data: users,
-        },
-      ],
-    }));
-  }, [users]);
+    if (premiumUsers) {
+      setChartData((prevData) => ({
+        ...prevData,
+        datasets: [
+          {
+            ...prevData.datasets[0],
+            data: users,
+          },
+          {
+            ...prevData.datasets[1],
+            data: premiumUsers,
+          },
+        ],
+      }));
+    } else {
+      setChartData((prevData) => ({
+        ...prevData,
+        datasets: [
+          {
+            ...prevData.datasets[0],
+            data: users,
+          },
+        ],
+      }));
+    }
+  }, [users, premiumUsers]);
 
   return (
     <div className="flex flex-col gap-5 w-full">

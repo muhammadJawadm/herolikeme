@@ -5,6 +5,8 @@ export interface Ad {
   title: string;
   description: string | null;
   image_url: string;
+  impressions: number;
+  click_rates: number;
   created_at: string;
 }
 

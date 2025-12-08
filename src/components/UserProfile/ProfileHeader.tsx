@@ -48,11 +48,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
                 user?.is_profile_complete
-                  ? 'bg-blue-100 text-blue-800'
+                  ?  'bg-blue-100 text-blue-800'
                   : 'bg-orange-100 text-orange-800'
               }`}
             >
-              {user?.is_profile_complete ? 'Profile Complete' : 'Profile Incomplete'}
+              {user?.is_profile_complete ? 'Profile Verified' : 'Profile Incomplete'}
             </span>
 
             <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">

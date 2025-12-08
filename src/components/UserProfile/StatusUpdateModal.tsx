@@ -63,7 +63,7 @@ const StatusUpdateModal: React.FC<StatusUpdateModalProps> = ({
             disabled={isUpdating}
           >
             <option value="pending">Pending</option>
-            <option value="verified">Verified</option>
+            <option value="verified">Profile Verified</option>
             <option value="rejected">Rejected</option>
           </select>
         </div>
