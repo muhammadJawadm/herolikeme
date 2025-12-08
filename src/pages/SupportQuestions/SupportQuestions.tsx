@@ -44,8 +44,7 @@ const SupportQuestions = () => {
     if (searchTerm) {
       filtered = filtered.filter(
         (q) =>
-          q.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          q.answer.toLowerCase().includes(searchTerm.toLowerCase())
+          q.question.toLowerCase().includes(searchTerm.toLowerCase()) 
       );
     }
 
@@ -183,7 +182,16 @@ const SupportQuestions = () => {
         {/* Search and Add Button */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div className="relative w-full sm:w-96">
-            
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiSearch className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Search questions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
 
           <button

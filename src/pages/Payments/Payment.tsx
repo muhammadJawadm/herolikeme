@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Header from "../../layouts/partials/Header";
-import { FiSearch } from "react-icons/fi";
 interface Payment {
   id: number;
   user: string;
@@ -10,7 +9,6 @@ interface Payment {
 }
 
 const Payment = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [payments, setPayments] = useState<Payment[]>([
     {
       id: 1,

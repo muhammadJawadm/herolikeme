@@ -1,12 +1,10 @@
 import {  useEffect, useState } from "react";
 import Header from "../../layouts/partials/Header"
-import { FiSearch } from "react-icons/fi";
 import { fetchFeedback, type Feedbacks } from "../../services/feedbackServices";
 import {deleteFeedback} from '../../services/feedbackServices'
 
 
 const Feedback = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [feedbackData, setFeedbackData] = useState<Feedbacks[]>([]);
   const [selectedFeedback, setSelectedFeedback] = useState<Feedbacks | null>(null);
   const [showModal, setShowModal] = useState(false);
