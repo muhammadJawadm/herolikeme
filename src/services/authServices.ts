@@ -11,6 +11,23 @@ export interface AuthUser {
  */
 export const signInWithEmail = async (email: string, password: string) => {
   try {
+    // First, check if the email exists in admin_users table
+    const { data: adminUser, error: adminCheckError } = await supabase
+      .from('admin_users')
+      .select('email')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (adminCheckError) {
+      console.error('Error checking admin user:', adminCheckError);
+      throw new Error('Failed to verify admin access');
+    }
+
+    if (!adminUser) {
+      throw new Error('Access denied. You are not authorized as an admin.');
+    }
+
+    // If admin user exists, proceed with authentication
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
