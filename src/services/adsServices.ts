@@ -7,6 +7,7 @@ export interface Ad {
   image_url: string;
   impressions: number;
   click_rates: number;
+  clicks: number;
   ad_url: string;
   created_at: string;
 }

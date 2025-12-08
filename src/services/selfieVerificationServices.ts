@@ -15,13 +15,9 @@ export const fetchSelfieVerificationByUserId = async (userId: string): Promise<S
     .from("selfie_verifications")
     .select("*")
     .eq("uid", userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
-    if (error.code === 'PGRST116') {
-      // No rows returned - user hasn't submitted selfie verification
-      return null;
-    }
     console.error("Error fetching selfie verification:", error);
     return null;
   }

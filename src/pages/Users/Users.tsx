@@ -35,6 +35,7 @@ const Users: React.FC = () => {
 
           try {
             selfie = await fetchSelfieVerificationByUserId(user.id);
+            console.log("Fetched selfie:", selfie);
           } catch (err) {
             console.error("Error fetching selfie:", err);
           }
@@ -127,11 +128,11 @@ const Users: React.FC = () => {
                     </td>
 
                     <td className="px-6 py-3">{user.email}</td>
-                    <td className="px-6 py-3">{user.gender || "N/A"}</td>
-                    <td className="px-6 py-3">{user.age_range || "N/A"}</td>
+                    <td className="px-3 py-1">{user.gender || "N/A"}</td>
+                    <td className="px-3 py-2">{user.age_range || "N/A"}</td>
 
                     {/* Premium Badge */}
-                    <td className="px-6 py-3">
+                    <td className="px-3 py-2">
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           user.is_premium

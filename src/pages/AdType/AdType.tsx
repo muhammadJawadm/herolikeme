@@ -53,6 +53,8 @@ const AdType = () => {
       );
     }
 
+
+
     setFilteredAds(filtered);
   }, [searchTerm, ads]);
 
@@ -105,6 +107,15 @@ const AdType = () => {
       setError("Image is required");
       return;
     }
+    if(!formData.ad_url){
+      setError("Ad URL is required");
+      return;
+    }
+    if(formData.ad_url){
+      if(!formData.ad_url.startsWith("http://") && !formData.ad_url.startsWith("https://")){
+        formData.ad_url = "https://" + formData.ad_url;
+      }
+    }
 
     setIsSubmitting(true);
 
@@ -150,6 +161,7 @@ const AdType = () => {
           image_url: imageUrl,
           impressions: 0,
           click_rates: 0,
+          clicks: 0,
           ad_url: formData.ad_url,
         });
         if (result) {
@@ -224,6 +236,7 @@ const AdType = () => {
                   <th className="px-4 py-3 text-left">Description</th>
                   <th className="px-4 py-3 text-left">Impressions</th>
                   <th className="px-4 py-3 text-left">Click Rates</th>
+                  <th className="px-4 py-3 text-left">Clicks</th>
                   <th className="px-4 py-3 text-left">Created At</th>
                   <th className="px-4 py-3 text-center">Action</th>
                 </tr>
@@ -263,6 +276,9 @@ const AdType = () => {
                       </td>
                       <td className="px-6 py-4 text-gray-700 font-medium">
                         {ad.click_rates?.toLocaleString() || 0}%
+                      </td>
+                      <td className="px-6 py-4 text-gray-700 font-medium">
+                        {ad.clicks?.toLocaleString() || 0}
                       </td>
                       <td className="px-6 py-4 text-gray-600">
                         {new Date(ad.created_at).toLocaleDateString("en-US", {
