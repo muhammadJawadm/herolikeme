@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaCommentDots, FaQuoteLeft, FaRegCommentDots, FaUser } from "react-icons/fa";
+import { FaCommentDots, FaRegCommentDots, FaUser } from "react-icons/fa";
 import Header from "../../layouts/partials/Header";
 import ChartOne from "../../components/ChartOne";
 import { MdPayment, MdSubscriptions } from "react-icons/md";
@@ -26,6 +26,8 @@ interface DashboardStats {
   premiumUsers: number;
   onlineUsers: number;
   completedProfiles: number;
+  newUsersThisWeek: number;
+  newPremiumUsersThisWeek: number;
 }
 
 const Home: React.FC = () => {
@@ -39,6 +41,8 @@ const Home: React.FC = () => {
     premiumUsers: 0,
     onlineUsers: 0,
     completedProfiles: 0,
+    newUsersThisWeek: 0,
+    newPremiumUsersThisWeek: 0,
   });
 
   const [monthlyData, setMonthlyData] = useState<MonthlyBookingData>({
@@ -78,6 +82,20 @@ const Home: React.FC = () => {
       ]);
 
       // Calculate basic stats
+      // Get users from last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const newUsersThisWeek = users.filter(u => {
+        const userCreatedDate = new Date(u.created_at);
+        return userCreatedDate >= sevenDaysAgo;
+      }).length;
+
+      const newPremiumUsersThisWeek = users.filter(u => {
+        const userCreatedDate = new Date(u.created_at);
+        return userCreatedDate >= sevenDaysAgo && u.is_premium;
+      }).length;
+
       setStats({
         totalUsers: users.length,
         totalQuotes: quotes.length,
@@ -87,6 +105,8 @@ const Home: React.FC = () => {
         premiumUsers: users.filter(u => u.is_premium).length,
         onlineUsers: users.filter(u => u.is_online).length,
         completedProfiles: users.filter(u => u.is_profile_complete).length,
+        newUsersThisWeek,
+        newPremiumUsersThisWeek,
       });
 
       // Process monthly user registration data - separate regular and premium
@@ -188,10 +208,10 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           <Card 
             title="New Users This week" 
-            count={stats.totalUsers.toString()} 
+            count={stats.newUsersThisWeek.toString()} 
             icon={FaUser} 
             link="/users" 
-            subtitle={`${stats.onlineUsers} online`}
+            subtitle="Last 7 days"
           />
           <Card 
             title="Total Users" 
@@ -216,10 +236,10 @@ const Home: React.FC = () => {
           />
           <Card 
             title="New Premium Users This week" 
-            count={stats.premiumUsers.toString()} 
+            count={stats.newPremiumUsersThisWeek.toString()} 
             icon={MdSubscriptions} 
             link="/users" 
-            subtitle={`${((stats.premiumUsers / stats.totalUsers) * 100).toFixed(1)}% of total`}
+            subtitle="Last 7 days"
           />
           <Card 
             title="Notifications" 

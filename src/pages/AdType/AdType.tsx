@@ -20,6 +20,7 @@ const AdType = () => {
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
   const [formData, setFormData] = useState({
     title: "",
+    ad_url: "",
     description: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -58,7 +59,7 @@ const AdType = () => {
   const openAddModal = () => {
     setIsEdit(false);
     setSelectedAd(null);
-    setFormData({ title: "", description: "" });
+    setFormData({ title: "", description: "", ad_url: "" });
     setImageFile(null);
     setImagePreview("");
     setError(null);
@@ -71,6 +72,7 @@ const AdType = () => {
     setFormData({
       title: ad.title,
       description: ad.description || "",
+      ad_url: ad.ad_url,
     });
     setImageFile(null);
     setImagePreview(ad.image_url);
@@ -124,6 +126,7 @@ const AdType = () => {
         const updates: Partial<Omit<Ad, "id" | "created_at">> = {
           title: formData.title,
           description: formData.description || null,
+          ad_url: formData.ad_url,
         };
 
         if (imageFile && imageUrl) {
@@ -145,6 +148,9 @@ const AdType = () => {
           title: formData.title,
           description: formData.description || null,
           image_url: imageUrl,
+          impressions: 0,
+          click_rates: 0,
+          ad_url: formData.ad_url,
         });
         if (result) {
           await refreshAds();
@@ -256,7 +262,7 @@ const AdType = () => {
                         {ad.impressions?.toLocaleString() || 0}
                       </td>
                       <td className="px-6 py-4 text-gray-700 font-medium">
-                        {ad.click_rates?.toFixed(2) || 0}%
+                        {ad.click_rates?.toLocaleString() || 0}%
                       </td>
                       <td className="px-6 py-4 text-gray-600">
                         {new Date(ad.created_at).toLocaleDateString("en-US", {
@@ -325,7 +331,21 @@ const AdType = () => {
                   disabled={isSubmitting}
                 />
               </div>
-
+<div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ad Url <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.ad_url}
+                  onChange={(e) =>
+                    setFormData({ ...formData, ad_url: e.target.value })
+                  }
+                  placeholder="Enter ad Url"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  disabled={isSubmitting}
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
