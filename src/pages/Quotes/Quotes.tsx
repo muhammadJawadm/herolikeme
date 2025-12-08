@@ -37,7 +37,14 @@ const Quotes = () => {
       refreshQuotes();
     }, [])
 
-
+const filterQuotes = quotes.filter((quote) =>{
+  if(!searchTerm) return true;
+  const search = searchTerm.toLowerCase();
+  return (
+   quote.text.toLowerCase().includes(search)||
+   quote.author.toLowerCase().includes(search)
+)
+});
   return (
    <div>
       <Header header={"Manage Quotes"} link="" />
@@ -76,7 +83,7 @@ const Quotes = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200/60">
-              {quotes.map((quote) => (
+              {filterQuotes.map((quote) => (
                 <tr key={quote.id} className="bg-white hover:bg-gray-50 transition-colors duration-150 ease-in-out">
                   <td className="px-6 py-4 text-gray-700 font-medium">{quote.id}</td>
                   <td className="px-6 py-4 text-gray-800 font-medium">{quote.author}</td>

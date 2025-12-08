@@ -11,7 +11,7 @@ interface Payment {
 
 const Payment = () => {
   const [searchTerm, setSearchTerm] = useState("");
- const [payments, setPayments] = useState<Payment[]>([
+  const [payments, setPayments] = useState<Payment[]>([
     {
       id: 1,
       user: "John Smith",
@@ -69,26 +69,26 @@ const Payment = () => {
     "Failed",
     "Refunded",
   ];
-  
+
   return (
-      <div>
+    <div>
       <Header header={"Payments"} link="" />
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-6">
-         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                                           <div className="relative w-full sm:w-96">
-                                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                               <FiSearch className="text-gray-400" />
-                                             </div>
-                                             <input
-                                               type="text"
-                                               className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg bg-white"
-                                               placeholder="Search payments..."
-                                               value={searchTerm}
-                                               onChange={(e) => setSearchTerm(e.target.value)}
-                                             />
-                                           </div>
-                                           
-                                         </div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          {/* <div className="relative w-full sm:w-96">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiSearch className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg bg-white"
+              placeholder="Search payments..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div> */}
+
+        </div>
         <div className="my-3">
 
           <div className="relative overflow-x-auto bg-white sm:rounded-lg border-b border-gray-200">

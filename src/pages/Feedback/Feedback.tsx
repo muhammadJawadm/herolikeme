@@ -40,21 +40,7 @@ const truncateText = (text: string, maxLength: number) => {
      <div>
       <Header header={"Manage Feedback"} link="" />
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-  <div className="relative w-full sm:w-96">
-    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-      <FiSearch className="text-gray-400" />
-    </div>
-    <input
-      type="text"
-      className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg bg-white"
-      placeholder="Search feedback..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-    />
-  </div>
-</div>
-
+      
         <div className="overflow-x-auto">
          <div className="relative overflow-x-auto bg-white sm:rounded-lg border-b border-gray-200">
           <table className="w-full text-sm text-left text-gray-600 rounded-lg overflow-hidden shadow-sm">
