@@ -294,7 +294,7 @@ const Home: React.FC = () => {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Line Chart (Main Chart, larger span) */}
-          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div className="lg:col-span-2 pt-10 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
             <ChartOne monthlyData={monthlyData} />
           </div>
 

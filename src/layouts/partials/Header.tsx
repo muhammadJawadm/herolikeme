@@ -31,12 +31,12 @@ const Header: React.FC <Headerprops>= ({ header, link, arrow }) => {
           </div>
           <div className="relative" id="navbar-default">
             <div className="flex flex-row">
-              <div
+              {/* <div
                 onClick={() => setShowMenue(true)}
                 className="rounded-full drop-shadow-lg  flex justify-center items-center  mr-1 sm:mr-4 w-9 h-9"
               >
                 <PiBellLight className="w-6 h-6" />
-              </div>
+              </div> */}
               <div className="flex items-center text-sm drop-shadow-lg">
                 <img
                   className="rounded-full drop sm:mr-2 w-9 h-9 object-cover"

@@ -86,10 +86,10 @@ const ChartOne = ({ monthlyData}:ChartsProps ) => {
 
   return (
     <div className="flex flex-col gap-5 w-full">
-      <h3 className="text-lg font-semibold leading-6">
+      <h1 className="text-lg font-semibold leading-6">
         Users Behaviour Analytics
-      </h3>
-      <div className="chart-container w-full h-[300px] sm:h-[400px] md:h-[500px] relative">
+      </h1>
+      <div className="pt-5 chart-container w-full h-[400px] sm:h-[500px] md:h-[600px] relative">
         <Line
           data={chartData}
           options={{
