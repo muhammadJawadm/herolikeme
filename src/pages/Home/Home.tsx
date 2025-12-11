@@ -267,7 +267,7 @@ const Home: React.FC = () => {
           <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-100 text-sm font-medium mb-1">Completed Profiles</p>
+                <p className="text-green-100 text-sm font-medium mb-1">Verified Profiles</p>
                 <h3 className="text-3xl font-bold">{stats.completedProfiles}</h3>
               </div>
               <div className="bg-white/20 rounded-full p-3">

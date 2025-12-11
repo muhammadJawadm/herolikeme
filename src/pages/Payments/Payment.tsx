@@ -68,27 +68,31 @@ const Payment = () => {
     "Refunded",
   ];
 
+  // Calculate total revenue from completed payments
+  const totalRevenue = payments
+    .filter((p) => p.priceStatus === "Completed")
+    .reduce((sum, p) => sum + p.amount, 0);
+
   return (
     <div>
       <Header header={"Payments"} link="" />
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          {/* <div className="relative w-full sm:w-96">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiSearch className="text-gray-400" />
+        {/* Total Revenue Card */}
+        <div className="mb-6">
+          <div className="bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-lg p-6 text-white flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm font-medium mb-1">Total Revenue</p>
+              <h3 className="text-3xl font-bold">${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
             </div>
-            <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg bg-white"
-              placeholder="Search payments..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div> */}
-
+            <div className="bg-white/20 rounded-full p-3">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 0V4m0 16v-4m8-4h-4m-8 0H4" />
+              </svg>
+            </div>
+          </div>
         </div>
+        {/* ...existing code... */}
         <div className="my-3">
-
           <div className="relative overflow-x-auto bg-white sm:rounded-lg border-b border-gray-200">
             <table className="w-full text-sm text-left text-gray-600 rounded-lg overflow-hidden shadow-sm">
               <thead className="text-xs font-semibold text-gray-700 uppercase bg-gray-100/80 backdrop-blur-sm">
@@ -108,15 +112,12 @@ const Payment = () => {
                     <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-800">
                       {payment.user}
                     </td>
-
                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
                       ${payment.amount.toFixed(2)}
                     </td>
-
                     <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                       {payment.paymentMethod}
                     </td>
-
                     <td className="px-6 py-4 whitespace-nowrap">
                       <select
                         value={payment.priceStatus}
