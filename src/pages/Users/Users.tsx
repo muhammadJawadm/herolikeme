@@ -117,7 +117,7 @@ const Users: React.FC = () => {
                     <td className="px-6 py-3 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
                         <img
-                          src={user.profile_images && user.profile_images.length > 0 ? user.profile_images[0] : '/placeholder-avatar.png'}
+                          src={user.user_profiles?.profile_images && user.user_profiles?.profile_images.length > 0 ? user.user_profiles.profile_images[0] : '/placeholder-avatar.png'}
                           alt="User"
                           className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200/50"
                         />
@@ -128,8 +128,8 @@ const Users: React.FC = () => {
                     </td>
 
                     <td className="px-6 py-3">{user.email}</td>
-                    <td className="px-3 py-1">{user.gender || "N/A"}</td>
-                    <td className="px-3 py-2">{user.age_range || "N/A"}</td>
+                    <td className="px-3 py-1">{user.user_profiles?.gender || "N/A"}</td>
+                    <td className="px-3 py-2">{user.user_profiles?.age_range || "N/A"}</td>
 
                     {/* Premium Badge */}
                     <td className="px-3 py-2">

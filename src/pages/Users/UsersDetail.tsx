@@ -107,7 +107,7 @@ const UsersDetail = () => {
               <h3 className="text-xl font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">
                 Bio
               </h3>
-              <p className="text-gray-700 leading-relaxed">{user?.short_bio}</p>
+              <p className="text-gray-700 leading-relaxed">{user?.user_profiles?.short_bio}</p>
             </div>
 
             {/* Interests Section */}
@@ -115,9 +115,9 @@ const UsersDetail = () => {
               <h3 className="text-xl font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">
                 Interests
               </h3>
-              {user?.interests && user.interests.length > 0 ? (
+              {user?.user_profiles?.interests && user.user_profiles?.interests.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                  {user.interests.map((interest: string, index: number) => (
+                  {user.user_profiles.interests.map((interest: string, index: number) => (
                     <span
                       key={index}
                       className="px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-sm font-medium"
@@ -138,19 +138,19 @@ const UsersDetail = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <InfoCard label="First Name" value={user?.first_name} />
                 <InfoCard label="Last Name" value={user?.last_name} />
-                <InfoCard label="Date of Birth" value={user?.dob ? new Date(user.dob).toLocaleDateString() : undefined} />
+                <InfoCard label="Date of Birth" value={user?.user_profiles?.dob ? new Date(user.user_profiles.dob).toLocaleDateString() : undefined} />
                 <InfoCard label="Login Via" value={user?.login_via || "email"} />
-                <InfoCard label="Looking For" value={user?.who_to_meet} />
-                <InfoCard label="Goal" value={user?.your_goal} />
-                <InfoCard label="Country" value={user?.country} />
-                <InfoCard label="Zip Code" value={user?.zip_code} />
-                <InfoCard label="Address" value={user?.address} />
-                <InfoCard label="Language" value={user?.language} />
-                <InfoCard label="Measurement Unit" value={user?.measurement_unit} />
-                <InfoCard label="Max Distance" value={user?.max_distance ? `${user.max_distance} miles` : undefined} />
-                <InfoCard label="Search Whole World" value={user?.is_whole_world} />
-                <InfoCard label="Impacted by Cancer" value={user?.is_cancer} />
-                <InfoCard label="Impacted by Chronic Conditions" value={user?.is_other_chronic} />
+                <InfoCard label="Looking For" value={Array.isArray(user?.user_profiles?.who_to_meet) ? user.user_profiles.who_to_meet.join(', ') : user?.user_profiles?.who_to_meet} />
+                <InfoCard label="Goal" value={user?.user_profiles?.your_goal} />
+                <InfoCard label="Country" value={user?.user_profiles?.country} />
+                <InfoCard label="Zip Code" value={user?.user_profiles?.zip_code} />
+                <InfoCard label="Address" value={user?.user_profiles?.address} />
+                <InfoCard label="Language" value={user?.user_profiles?.language} />
+                <InfoCard label="Measurement Unit" value={user?.user_profiles?.measurement_unit} />
+                <InfoCard label="Max Distance" value={user?.user_profiles?.max_distance ? `${user.user_profiles.max_distance} miles` : undefined} />
+                <InfoCard label="Search Whole World" value={user?.user_profiles?.is_whole_world} />
+                <InfoCard label="Impacted by Cancer" value={user?.user_profiles?.is_cancer} />
+                <InfoCard label="Impacted by Chronic Conditions" value={user?.user_profiles?.is_other_chronic} />
                 <InfoCard label="Show Last Active" value={user?.show_last_active} />
                 <InfoCard label="FCM Notifications" value={user?.fcm_enabled} />
                 <InfoCard label="Last Seen" value={user?.last_seen ? new Date(user.last_seen).toLocaleString() : undefined} />
@@ -166,10 +166,10 @@ const UsersDetail = () => {
             />
 
             {/* Gallery Section */}
-            <GallerySection images={user?.profile_images} />
+            <GallerySection images={user?.user_profiles?.profile_images} />
 
             {/* Voice Message Section */}
-            <VoiceMessageSection audioUrl={user?.audio} />
+            <VoiceMessageSection audioUrl={user?.user_profiles?.audio} />
           </div>
         </div>
       </div>

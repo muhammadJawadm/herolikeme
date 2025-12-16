@@ -122,12 +122,12 @@ const DataDownloadRequests = () => {
       const personalInfo = [
         ['Name', userData.name || userData.first_name && userData.last_name ? `${userData.first_name || ''} ${userData.last_name || ''}`.trim() : 'N/A'],
         ['Email', userData.email || 'N/A'],
-        ['Gender', userData.gender || 'N/A'],
-        ['Date of Birth', userData.dob ? new Date(userData.dob).toLocaleDateString() : 'N/A'],
-        ['Country', userData.country || 'N/A'],
-        ['Zip Code', userData.zip_code || 'N/A'],
-        ['Address', userData.address || 'N/A'],
-        ['Language', userData.language || 'N/A'],
+        ['Gender', userData.user_profiles?.gender || 'N/A'],
+        ['Date of Birth', userData.user_profiles?.dob ? new Date(userData.user_profiles.dob).toLocaleDateString() : 'N/A'],
+        ['Country', userData.user_profiles?.country || 'N/A'],
+        ['Zip Code', userData.user_profiles?.zip_code || 'N/A'],
+        ['Address', userData.user_profiles?.address || 'N/A'],
+        ['Language', userData.user_profiles?.language || 'N/A'],
       ];
 
       autoTable(pdf, {
@@ -191,13 +191,13 @@ const DataDownloadRequests = () => {
       yPosition += 10;
 
       const profileDetails = [
-        ['Short Bio', userData.short_bio || 'N/A'],
-        ['Who to Meet', userData.who_to_meet || 'N/A'],
-        ['Your Goal', userData.your_goal || 'N/A'],
-        ['Max Distance', userData.max_distance ? `${userData.max_distance} km` : 'N/A'],
-        ['Age Range', userData.age_range || 'N/A'],
-        ['Measurement Unit', userData.measurement_unit || 'N/A'],
-        ['Whole World', userData.is_whole_world ? 'Yes' : 'No'],
+        ['Short Bio', userData.user_profiles?.short_bio || 'N/A'],
+        ['Who to Meet', userData.user_profiles?.who_to_meet || 'N/A'],
+        ['Your Goal', userData.user_profiles?.your_goal || 'N/A'],
+        ['Max Distance', userData.user_profiles?.max_distance ? `${userData.user_profiles.max_distance} km` : 'N/A'],
+        ['Age Range', userData.user_profiles?.age_range || 'N/A'],
+        ['Measurement Unit', userData.user_profiles?.measurement_unit || 'N/A'],
+        ['Whole World', userData.user_profiles?.is_whole_world ? 'Yes' : 'No'],
       ];
 
       autoTable(pdf, {
@@ -228,8 +228,8 @@ const DataDownloadRequests = () => {
       yPosition += 10;
 
       const healthInfo = [
-        ['Cancer Status', userData.is_cancer ? 'Yes' : 'No'],
-        ['Other Chronic Condition', userData.is_other_chronic ? 'Yes' : 'No'],
+        ['Cancer Status', userData.user_profiles?.is_cancer ? 'Yes' : 'No'],
+        ['Other Chronic Condition', userData.user_profiles?.is_other_chronic ? 'Yes' : 'No'],
       ];
 
       autoTable(pdf, {
@@ -248,7 +248,7 @@ const DataDownloadRequests = () => {
       yPosition = (pdf as any).lastAutoTable.finalY + 15;
 
       // Profile Images Section
-      if (userData.profile_images && userData.profile_images.length > 0) {
+      if (userData.user_profiles?.profile_images && userData.user_profiles.profile_images.length > 0) {
         if (yPosition > 250) {
           pdf.addPage();
           yPosition = 20;
@@ -261,7 +261,7 @@ const DataDownloadRequests = () => {
         yPosition += 10;
 
         // Load and add images
-        const imagePromises = userData.profile_images.map(async (url) => {
+        const imagePromises = userData.user_profiles.profile_images.map(async (url) => {
           try {
             const response = await fetch(url);
             const blob = await response.blob();
@@ -326,7 +326,7 @@ const DataDownloadRequests = () => {
       }
 
       // Interests Section
-      if (userData.interests && userData.interests.length > 0) {
+      if (userData.user_profiles?.interests && userData.user_profiles.interests.length > 0) {
         if (yPosition > 250) {
           pdf.addPage();
           yPosition = 20;
@@ -338,7 +338,7 @@ const DataDownloadRequests = () => {
         pdf.text('Interests', 14, yPosition);
         yPosition += 10;
 
-        const interestsBody = userData.interests.map((interest, index) => [
+        const interestsBody = userData.user_profiles.interests.map((interest, index) => [
           `${index + 1}`,
           interest
         ]);

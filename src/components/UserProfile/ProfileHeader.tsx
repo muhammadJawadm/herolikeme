@@ -11,7 +11,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
       <div className="flex flex-col md:flex-row items-center gap-6">
         <div className="relative">
           <img
-            src={user?.profile_images ? user.profile_images[0] : ''}
+            src={user?.user_profiles?.profile_images ? user.user_profiles.profile_images[0] : ''}
             alt={user?.name}
             className="w-32 h-32 md:w-36 md:h-36 rounded-full object-cover border-4 border-white shadow-lg"
           />
@@ -56,11 +56,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user }) => {
             </span>
 
             <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-              {user?.age_range || 'N/A'}
+              {user?.user_profiles?.age_range || 'N/A'}
             </span>
 
             <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-              {user?.gender || 'N/A'}
+              {user?.user_profiles?.gender || 'N/A'}
             </span>
 
             {user?.is_paused && (

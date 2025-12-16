@@ -131,8 +131,8 @@ const Home: React.FC = () => {
       });
 
       // Process disease data
-      const cancerCount = users.filter(u => u.is_cancer).length;
-      const chronicCount = users.filter(u => u.is_other_chronic).length;
+      const cancerCount = users.filter(u => u.user_profiles?.is_cancer).length;
+      const chronicCount = users.filter(u => u.user_profiles?.is_other_chronic).length;
       const othersCount = users.length - cancerCount - chronicCount;
 
       setDiseaseData({
@@ -143,8 +143,8 @@ const Home: React.FC = () => {
       // Process country data
       const countryMap = new Map<string, number>();
       users.forEach(user => {
-        if (user.country) {
-          countryMap.set(user.country, (countryMap.get(user.country) || 0) + 1);
+        if (user.user_profiles?.country) {
+          countryMap.set(user.user_profiles.country, (countryMap.get(user.user_profiles.country) || 0) + 1);
         }
       });
 
@@ -160,8 +160,8 @@ const Home: React.FC = () => {
       // Process age data
       const ageMap = new Map<string, number>();
       users.forEach(user => {
-        if (user.age_range) {
-          ageMap.set(user.age_range, (ageMap.get(user.age_range) || 0) + 1);
+        if (user.user_profiles?.age_range) {
+          ageMap.set(user.user_profiles.age_range, (ageMap.get(user.user_profiles.age_range) || 0) + 1);
         }
       });
 
