@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import Header from "../../layouts/partials/Header";
 import { FiSearch } from "react-icons/fi";
-import { 
-  fetchCommunities, 
-  deleteCommunity, 
-  addCommunity, 
+import {
+  fetchCommunities,
+  deleteCommunity,
+  addCommunity,
   updateCommunity,
-  type Community 
+  type Community
 } from "../../services/communityServices";
 import { fetchCategories, type CategoryGroup } from "../../services/categoryServices";
 
@@ -21,6 +21,7 @@ const Discussions = () => {
     title: "",
     description: "",
     catagory_id: 1,
+    is_heroz: true,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,10 +49,11 @@ const Discussions = () => {
   const openAddModal = () => {
     setIsEdit(false);
     setSelectedCommunity(null);
-    setFormData({ 
-      title: "", 
-      description: "", 
-      catagory_id: categories.length > 0 ? categories[0].id : 1 
+    setFormData({
+      title: "",
+      description: "",
+      catagory_id: categories.length > 0 ? categories[0].id : 1,
+      is_heroz: true,
     });
     setError(null);
     setShowModal(true);
@@ -64,6 +66,7 @@ const Discussions = () => {
       title: community.title,
       description: community.description,
       catagory_id: community.catagory_id,
+      is_heroz: true,
     });
     setError(null);
     setShowModal(true);
@@ -183,13 +186,13 @@ const Discussions = () => {
                         })}
                       </td>
                       <td className="px-6 py-4">
-                        <button 
+                        <button
                           onClick={() => openEditModal(community)}
                           className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline mr-3 font-medium"
                         >
                           Edit
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(community.id)}
                           className="text-red-600 hover:text-red-800 cursor-pointer hover:underline font-medium"
                         >

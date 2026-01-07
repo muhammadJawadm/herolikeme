@@ -27,7 +27,7 @@ export const deleteCommunity = async (id: number): Promise<boolean> => {
 };
 
 export const addCommunity = async (community: Omit<Community, 'id' | 'created_at'>): Promise<Community | null> => {
-    let { data, error } = await supabase.from("community").insert({ community, is_heroz: true, }).select().single();
+    let { data, error } = await supabase.from("community").insert(community).select().single();
     if (error) {
         console.log("Error adding community:", error);
         return null;
