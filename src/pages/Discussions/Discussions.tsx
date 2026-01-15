@@ -261,8 +261,13 @@ const Discussions = () => {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDelete(community.id)}
-                          className="text-red-600 hover:text-red-800 cursor-pointer hover:underline font-medium"
+                          onClick={() => !community.is_heroz && handleDelete(community.id)}
+                          disabled={!community.is_heroz}
+                          title={!community.is_heroz ? "Admin can't delete the user Communities" : ""}
+                          className={`font-medium ${!community.is_heroz
+                              ? "text-gray-400 cursor-not-allowed"
+                              : "text-red-600 hover:text-red-800 cursor-pointer hover:underline"
+                            }`}
                         >
                           Delete
                         </button>
