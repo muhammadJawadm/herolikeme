@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Header from "../../layouts/partials/Header";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiChevronDown } from "react-icons/fi";
 import {
   fetchCommunities,
   deleteCommunity,
@@ -15,6 +15,8 @@ const Discussions = () => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [categories, setCategories] = useState<CategoryGroup[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [filterType, setFilterType] = useState<"all" | "admin" | "user">("all");
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
   const [formData, setFormData] = useState({
@@ -118,10 +120,18 @@ const Discussions = () => {
     }
   };
 
-  const filteredCommunities = communities.filter(community =>
-    community.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    community.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCommunities = communities.filter(community => {
+    const matchesSearch = community.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      community.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    if (filterType === "all") {
+      return matchesSearch;
+    } else if (filterType === "admin") {
+      return matchesSearch && community.is_heroz === true;
+    } else {
+      return matchesSearch && community.is_heroz === false;
+    }
+  });
   return (
     <div>
       <Header header={"Manage Communities"} link="" />
@@ -141,12 +151,70 @@ const Discussions = () => {
             />
           </div>
 
-          <button
-            onClick={openAddModal}
-            className="px-4 py-2 bg-secondary cursor-pointer text-white rounded-lg shadow hover:bg-secondary/90 transition-colors"
-          >
-            + Add Community
-          </button>
+          <div className="flex gap-3">
+            {/* Filter Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+              >
+                <span>
+                  {filterType === "all" ? "All" : filterType === "admin" ? "Admin Communities" : "User Communities"}
+                </span>
+                <FiChevronDown className={`transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showFilterDropdown && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowFilterDropdown(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          setFilterType("all");
+                          setShowFilterDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors ${filterType === "all" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
+                          }`}
+                      >
+                        All
+                      </button>
+                      <button
+                        onClick={() => {
+                          setFilterType("admin");
+                          setShowFilterDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors ${filterType === "admin" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
+                          }`}
+                      >
+                        Admin Communities
+                      </button>
+                      <button
+                        onClick={() => {
+                          setFilterType("user");
+                          setShowFilterDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors ${filterType === "user" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
+                          }`}
+                      >
+                        User Communities
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={openAddModal}
+              className="px-4 py-2 bg-secondary cursor-pointer text-white rounded-lg shadow hover:bg-secondary/90 transition-colors"
+            >
+              + Add Community
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

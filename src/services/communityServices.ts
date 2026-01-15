@@ -5,6 +5,7 @@ export interface Community {
     catagory_id: number;      // foreign key
     title: string;
     description: string;
+    is_heroz: boolean;        // true = admin community, false = user community
     created_at: string;       // timestamp with time zone → ISO string
 }
 
