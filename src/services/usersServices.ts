@@ -49,28 +49,66 @@ export interface UserProfile {
   audio?: string;
   interests?: string[] | null;
 
-  profile_images?: string[];   
-  short_bio ?: string;         
-  updated_at?: string;         
-  who_to_meet?: string[];  
+  profile_images?: string[];
+  short_bio?: string;
+  updated_at?: string;
+  who_to_meet?: string[];
   your_goal?: string;
   zip_code?: string;             // extracted URLs
 }
 
-export const fetchUsers = async():Promise<User[]>=>{
-let {data , error} = await supabase.from("users").select("*, user_profiles(*)");
-if(error){
-    console.log("Error fetching users:", error);
-    return [];
-}
-return data as User[];
+/**
+ * Fetches all users from the database with pagination
+ * Supabase has a max limit of 1000 rows per request, so we fetch in batches
+ */
+export const fetchUsers = async (): Promise<User[]> => {
+  const PAGE_SIZE = 1000;
+  const allUsers: User[] = [];
+  let start = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    const { data, error, count } = await supabase
+      .from("users")
+      .select("*, user_profiles(*)", { count: 'exact' })
+      .range(start, start + PAGE_SIZE - 1)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error("Error fetching users:", error);
+      return allUsers;
+    }
+
+    if (data && data.length > 0) {
+      allUsers.push(...data);
+
+      if (data.length < PAGE_SIZE || allUsers.length >= (count || 0)) {
+        hasMore = false;
+      } else {
+        start += PAGE_SIZE;
+      }
+    } else {
+      hasMore = false;
+    }
+  }
+
+  return allUsers;
 }
 
-export const fetchUserById = async(id:string):Promise<User | null>=>{
-    let {data , error} = await supabase.from("users").select("* , user_profiles(*)").eq("id",id).single();
-    if(error){
-        console.log("Error fetching user:", error);
-        return null;
-    }
-    return data as User;
+/**
+ * Fetches a single user by their ID with their profile data
+ */
+export const fetchUserById = async (id: string): Promise<User | null> => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*, user_profiles(*)")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error("Error fetching user:", error);
+    return null;
+  }
+
+  return data as User;
 }

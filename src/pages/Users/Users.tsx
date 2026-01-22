@@ -1,7 +1,7 @@
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import Header from "../../layouts/partials/Header";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import { fetchUsers } from '../../services/usersServices'
 import type { User } from '../../services/usersServices'
@@ -13,11 +13,14 @@ const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [usersData, setUsersData] = useState<(User & { selfieStatus?: string })[]>([]);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
+
   // Fetch ALL USERS
   useEffect(() => {
     const getUsers = async () => {
       const data = await fetchUsers();
-      console.log("Fetched users:", data);
 
       setUsersData(data);
     };
@@ -35,7 +38,7 @@ const Users: React.FC = () => {
 
           try {
             selfie = await fetchSelfieVerificationByUserId(user.id);
-            console.log("Fetched selfie:", selfie);
+
           } catch (err) {
             console.error("Error fetching selfie:", err);
           }
@@ -53,16 +56,40 @@ const Users: React.FC = () => {
     fetchAllSelfieStatus();
   }, [usersData.length]);
 
-  const filteredUsers = usersData.filter((user) => {
-    if (!searchTerm) return true;
-    const search = searchTerm.toLowerCase();
-    return (
-      user.name?.toLowerCase().includes(search) ||
-      user.email?.toLowerCase().includes(search) ||
-      user.first_name?.toLowerCase().includes(search) ||
-      user.last_name?.toLowerCase().includes(search)
-    );
-  });
+  // Filter and paginate users
+  const filteredUsers = useMemo(() => {
+    return usersData.filter((user) => {
+      if (!searchTerm) return true;
+      const search = searchTerm.toLowerCase();
+      return (
+        user.name?.toLowerCase().includes(search) ||
+        user.email?.toLowerCase().includes(search) ||
+        user.first_name?.toLowerCase().includes(search) ||
+        user.last_name?.toLowerCase().includes(search)
+      );
+    });
+  }, [usersData, searchTerm]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (value: number) => {
+    setItemsPerPage(value);
+    setCurrentPage(1);
+  };
 
   return (
     <div>
@@ -70,7 +97,7 @@ const Users: React.FC = () => {
 
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-6">
 
-        {/* Search */}
+        {/* Search and Info Bar */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div className="relative w-full sm:w-96">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -83,6 +110,22 @@ const Users: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length}
+            </span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+            >
+              <option value={25}>25 per page</option>
+              <option value={50}>50 per page</option>
+              <option value={100}>100 per page</option>
+              <option value={200}>200 per page</option>
+            </select>
           </div>
         </div>
 
@@ -109,7 +152,7 @@ const Users: React.FC = () => {
               </thead>
 
               <tbody className="divide-y divide-gray-200/60">
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <tr
                     key={user.id}
                     className="bg-white hover:bg-gray-50 transition-colors duration-150 ease-in-out"
@@ -134,11 +177,10 @@ const Users: React.FC = () => {
                     {/* Premium Badge */}
                     <td className="px-3 py-2">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.is_premium
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_premium
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-gray-100 text-gray-800"
+                          }`}
                       >
                         {user.is_premium ? "Premium" : "Free"}
                       </span>
@@ -147,11 +189,10 @@ const Users: React.FC = () => {
                     {/* Profile Status */}
                     <td className="px-6 py-3">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.is_profile_complete
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-orange-100 text-orange-800"
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_profile_complete
+                          ? "bg-blue-100 text-blue-800"
+                          : "bg-orange-100 text-orange-800"
+                          }`}
                       >
                         {user.is_profile_complete ? "Complete" : "Incomplete"}
                       </span>
@@ -160,13 +201,12 @@ const Users: React.FC = () => {
                     {/* SELFIE STATUS COLUMN */}
                     <td className="px-6 py-3">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.selfieStatus === "Approved"
-                            ? "bg-green-100 text-green-800"
-                            : user.selfieStatus === "Rejected"
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.selfieStatus === "Approved"
+                          ? "bg-green-100 text-green-800"
+                          : user.selfieStatus === "Rejected"
                             ? "bg-red-100 text-red-800"
                             : "bg-gray-100 text-gray-800"
-                        }`}
+                          }`}
                       >
                         {user.selfieStatus}
                       </span>
@@ -175,11 +215,10 @@ const Users: React.FC = () => {
                     {/* Online Status */}
                     <td className="px-6 py-3">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.is_online
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.is_online
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                          }`}
                       >
                         {user.is_online ? "Online" : "Offline"}
                       </span>
@@ -203,6 +242,57 @@ const Users: React.FC = () => {
 
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-between items-center mt-6 px-4 py-3 bg-white border border-gray-200 rounded-lg">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <FiChevronLeft className="w-4 h-4" />
+                Previous
+              </button>
+
+              <div className="flex items-center gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    return (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    );
+                  })
+                  .map((page, index, array) => (
+                    <div key={page} className="flex items-center">
+                      {index > 0 && array[index - 1] !== page - 1 && (
+                        <span className="px-2 text-gray-400">...</span>
+                      )}
+                      <button
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${currentPage === page
+                            ? "bg-blue-600 text-white"
+                            : "text-gray-700 hover:bg-gray-100"
+                          }`}
+                      >
+                        {page}
+                      </button>
+                    </div>
+                  ))}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+                <FiChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
