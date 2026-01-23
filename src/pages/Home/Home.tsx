@@ -157,24 +157,39 @@ const Home: React.FC = () => {
         values: sortedCountries.map(([, count]) => count),
       });
 
-      // Process age data
-      const ageMap = new Map<string, number>();
+      // Process age data with fixed ranges
+      const ageRanges = [
+        { label: "17-25", min: 17, max: 25 },
+        { label: "26-35", min: 26, max: 35 },
+        { label: "36-45", min: 36, max: 45 },
+        { label: "46-55", min: 46, max: 55 },
+        { label: "55+", min: 56, max: 200 },
+      ];
+      const ageCounts = Array(ageRanges.length).fill(0);
       users.forEach(user => {
+        let age = null;
+        // Try to extract age from user_profiles.age or user_profiles.age_range
         if (user.user_profiles?.age_range) {
-          ageMap.set(user.user_profiles.age_range, (ageMap.get(user.user_profiles.age_range) || 0) + 1);
+          age = parseInt(user.user_profiles.age_range);
+        } else if (user.user_profiles?.age_range) {
+          // Try to parse the lower bound of the range
+          const match = user.user_profiles.age_range.match(/(\d{2,3})/);
+          if (match) {
+            age = parseInt(match[1]);
+          }
+        }
+        if (age && !isNaN(age)) {
+          for (let i = 0; i < ageRanges.length; i++) {
+            if (age >= ageRanges[i].min && age <= ageRanges[i].max) {
+              ageCounts[i]++;
+              break;
+            }
+          }
         }
       });
-
-      const sortedAges = Array.from(ageMap.entries()).sort((a, b) => {
-        // Sort by age range start
-        const aStart = parseInt(a[0].split('-')[0]);
-        const bStart = parseInt(b[0].split('-')[0]);
-        return aStart - bStart;
-      });
-
       setAgeData({
-        labels: sortedAges.map(([age]) => age),
-        values: sortedAges.map(([, count]) => count),
+        labels: ageRanges.map(r => r.label),
+        values: ageCounts,
       });
     } catch (error) {
       console.error("Error loading dashboard data:", error);
