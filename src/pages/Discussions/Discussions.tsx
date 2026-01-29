@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Header from "../../layouts/partials/Header";
-import { FiSearch, FiChevronDown } from "react-icons/fi";
+import { FiSearch, FiChevronDown, FiX } from "react-icons/fi";
 import {
   fetchCommunities,
   deleteCommunity,
@@ -9,6 +9,11 @@ import {
   type Community
 } from "../../services/communityServices";
 import { fetchCategories, type CategoryGroup } from "../../services/categoryServices";
+import {
+  fetchCommunityMessages,
+  deleteMessage,
+  type CommunityMessage
+} from "../../services/communityMessagesServices";
 
 const Discussions = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,6 +32,10 @@ const Discussions = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showMessagesModal, setShowMessagesModal] = useState(false);
+  const [selectedCommunityForMessages, setSelectedCommunityForMessages] = useState<Community | null>(null);
+  const [messages, setMessages] = useState<CommunityMessage[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   const refreshCommunities = async () => {
     const data = await fetchCommunities();
@@ -112,10 +121,30 @@ const Discussions = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this community?")) {
+    if (window.confirm("Are you sure you want to delete this community? All messages will also be deleted due to cascade delete.")) {
       const success = await deleteCommunity(id);
       if (success) {
         await refreshCommunities();
+      }
+    }
+  };
+
+  const openMessagesModal = async (community: Community) => {
+    setSelectedCommunityForMessages(community);
+    setShowMessagesModal(true);
+    setLoadingMessages(true);
+    const communityMessages = await fetchCommunityMessages(community.id);
+    setMessages(communityMessages);
+    setLoadingMessages(false);
+  };
+
+  const handleDeleteMessage = async (messageId: number) => {
+    if (window.confirm("Are you sure you want to delete this message?")) {
+      const success = await deleteMessage(messageId);
+      if (success && selectedCommunityForMessages) {
+        // Refresh messages
+        const communityMessages = await fetchCommunityMessages(selectedCommunityForMessages.id);
+        setMessages(communityMessages);
       }
     }
   };
@@ -233,7 +262,11 @@ const Discussions = () => {
               <tbody className="divide-y divide-gray-200/60">
                 {filteredCommunities.length > 0 ? (
                   filteredCommunities.map((community) => (
-                    <tr key={community.id} className="bg-white hover:bg-gray-50 transition-colors duration-150">
+                    <tr 
+                      key={community.id} 
+                      className="bg-white hover:bg-blue-50 transition-colors duration-150 cursor-pointer"
+                      onClick={() => openMessagesModal(community)}
+                    >
                       <td className="px-6 py-4 text-gray-700 font-medium">{community.id}</td>
                       <td className="px-6 py-4 font-medium text-gray-800">
                         {community.title}
@@ -253,7 +286,7 @@ const Discussions = () => {
                           day: 'numeric'
                         })}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => openEditModal(community)}
                           className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline mr-3 font-medium"
@@ -361,6 +394,113 @@ const Discussions = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Messages Modal */}
+      {showMessagesModal && selectedCommunityForMessages && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Community Messages
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {selectedCommunityForMessages.title}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowMessagesModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <FiX className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              {loadingMessages ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                </div>
+              ) : messages.length > 0 ? (
+                <div className="space-y-4">
+                  {messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                              <span className="text-sm font-medium text-blue-600">
+                                {msg.sender_name?.charAt(0).toUpperCase() || "U"}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-800">
+                                {msg.sender_name || "Unknown User"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {msg.sender_email}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="ml-11">
+                            <p className="text-gray-700 mb-2">{msg.message}</p>
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <span className="px-2 py-1 bg-gray-200 rounded">
+                                {msg.message_type}
+                              </span>
+                              <span>
+                                {new Date(msg.created_at).toLocaleString('en-US', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteMessage(msg.id)}
+                          className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete message"
+                        >
+                          <FiX className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                  <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <p className="text-lg font-medium">No messages yet</p>
+                  <p className="text-sm">This community doesn't have any messages.</p>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-600">
+                  Total Messages: <span className="font-medium text-gray-800">{messages.length}</span>
+                </p>
+                <button
+                  onClick={() => setShowMessagesModal(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

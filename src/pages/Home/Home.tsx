@@ -80,12 +80,13 @@ const Home: React.FC = () => {
         fetchCommunities(),
         fetchNotifications(),
       ]);
+      console.log(users);
 
       // Calculate basic stats
       // Get users from last 7 days
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      
+
       const newUsersThisWeek = users.filter(u => {
         const userCreatedDate = new Date(u.created_at);
         return userCreatedDate >= sevenDaysAgo;
@@ -112,7 +113,7 @@ const Home: React.FC = () => {
       // Process monthly user registration data - separate regular and premium
       const monthlyUsers = Array(12).fill(0);
       const monthlyPremiumUsers = Array(12).fill(0);
-      
+
       users.forEach(user => {
         const month = new Date(user.created_at).getMonth();
         monthlyUsers[month]++;
@@ -150,7 +151,7 @@ const Home: React.FC = () => {
 
       const sortedCountries = Array.from(countryMap.entries())
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 5);
+        .slice(0, 15);
 
       setCountryData({
         labels: sortedCountries.map(([country]) => country),
@@ -221,46 +222,46 @@ const Home: React.FC = () => {
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 space-y-8">
         {/* Cards Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-          <Card 
-            title="New Users This week" 
-            count={stats.newUsersThisWeek.toString()} 
-            icon={FaUser} 
-            link="/users" 
+          <Card
+            title="New Users This week"
+            count={stats.newUsersThisWeek.toString()}
+            icon={FaUser}
+            link="/users"
             subtitle="Last 7 days"
           />
-          <Card 
-            title="Total Users" 
-            count={stats.totalUsers.toString()} 
-            icon={FaUser} 
-            link="/users" 
+          <Card
+            title="Total Users"
+            count={stats.totalUsers.toString()}
+            icon={FaUser}
+            link="/users"
             subtitle={`${stats.onlineUsers} online`}
           />
-          <Card 
-            title="Feedback" 
-            count={stats.totalFeedback.toString()} 
-            icon={FaRegCommentDots} 
-            link="/feedback" 
+          <Card
+            title="Feedback"
+            count={stats.totalFeedback.toString()}
+            icon={FaRegCommentDots}
+            link="/feedback"
             subtitle="User feedback"
           />
-          <Card 
-            title="Communities" 
-            count={stats.totalDiscussions.toString()} 
-            icon={FaCommentDots} 
-            link="/discussion" 
+          <Card
+            title="Communities"
+            count={stats.totalDiscussions.toString()}
+            icon={FaCommentDots}
+            link="/discussion"
             subtitle="Discussions"
           />
-          <Card 
-            title="New Premium Users This week" 
-            count={stats.newPremiumUsersThisWeek.toString()} 
-            icon={MdSubscriptions} 
-            link="/users" 
+          <Card
+            title="New Premium Users This week"
+            count={stats.newPremiumUsersThisWeek.toString()}
+            icon={MdSubscriptions}
+            link="/users"
             subtitle="Last 7 days"
           />
-          <Card 
-            title="Notifications" 
-            count={stats.totalNotifications.toString()} 
-            icon={MdPayment} 
-            link="/notifications" 
+          <Card
+            title="Notifications"
+            count={stats.totalNotifications.toString()}
+            icon={MdPayment}
+            link="/notifications"
             subtitle="Total sent"
           />
         </div>
@@ -320,7 +321,7 @@ const Home: React.FC = () => {
             </div>
             {countryData.labels.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                <PieChartBox title="Top Countries" chartData={countryData} />
+                <PieChartBox title="Top 15 Countries" chartData={countryData} />
               </div>
             )}
             {ageData.labels.length > 0 && (
@@ -352,7 +353,7 @@ const Card = ({ title, count, icon: Icon, link, subtitle }: CardProps) => (
           <Icon className="w-6 h-6 text-primary" />
         </div>
       </div>
-      
+
       <div className="relative z-10">
         <h4 className="text-3xl font-bold text-gray-900 mb-1">{count}</h4>
         <span className="text-sm font-semibold text-gray-700 tracking-wide block mb-1">{title}</span>
@@ -360,7 +361,7 @@ const Card = ({ title, count, icon: Icon, link, subtitle }: CardProps) => (
           <span className="text-xs text-gray-500">{subtitle}</span>
         )}
       </div>
-      
+
       {/* Subtle hover indicator */}
       <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/70 to-primary/30 opacity-0 transition-opacity duration-300 hover:opacity-100"></div>
     </div>
