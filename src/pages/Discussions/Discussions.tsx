@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Header from "../../layouts/partials/Header";
-import { FiSearch, FiChevronDown, FiX } from "react-icons/fi";
+import { FiSearch, FiChevronDown, FiTrash2, FiX } from "react-icons/fi";
 import {
   fetchCommunities,
   deleteCommunity,
@@ -471,7 +471,7 @@ const Discussions = () => {
                           className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Delete message"
                         >
-                          <FiX className="w-4 h-4" />
+                          <FiTrash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
