@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "../../layouts/partials/Header";
-import { FiSearch, FiChevronDown, FiTrash2, FiX } from "react-icons/fi";
+import { FiSearch, FiChevronDown, FiTrash2, FiX, FiEdit } from "react-icons/fi";
+// import BiChat from "react-icons/bi";
 import {
   fetchCommunities,
   deleteCommunity,
@@ -14,6 +15,7 @@ import {
   deleteMessage,
   type CommunityMessage
 } from "../../services/communityMessagesServices";
+import { BiChat } from "react-icons/bi";
 
 const Discussions = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -287,17 +289,23 @@ const Discussions = () => {
                         })}
                       </td>
                       <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => openMessagesModal(community)} className="text-green-600 hover:text-green-800 cursor-pointer hover:underline mr-3 font-medium"
+                          title="Community Messages">
+                          <BiChat className="w-4 h-4" />
+                        </button>
                         <button
+                        title="Edit"
                           onClick={() => openEditModal(community)}
                           className="text-blue-600 hover:text-blue-800 cursor-pointer hover:underline mr-3 font-medium"
                         >
-                          Edit
+                          <FiEdit className="w-4 h-4" />
                         </button>
                         <button
+                        title="Delete"
                           onClick={() => handleDelete(community.id)}
                           className="text-red-600 hover:text-red-800 cursor-pointer hover:underline font-medium"
                         >
-                          Delete
+                        <FiTrash2 className="w-4 h-4" />
                         </button>
                       </td>
                     </tr>
