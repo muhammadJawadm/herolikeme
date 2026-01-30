@@ -38,6 +38,8 @@ const Discussions = () => {
   const [selectedCommunityForMessages, setSelectedCommunityForMessages] = useState<Community | null>(null);
   const [messages, setMessages] = useState<CommunityMessage[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<number | null>(null);
 
   const refreshCommunities = async () => {
     const data = await fetchCommunities();
@@ -140,15 +142,27 @@ const Discussions = () => {
     setLoadingMessages(false);
   };
 
-  const handleDeleteMessage = async (messageId: number) => {
-    if (window.confirm("Are you sure you want to delete this message?")) {
-      const success = await deleteMessage(messageId);
+  const handleDeleteMessage = (messageId: number) => {
+    setMessageToDelete(messageId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteMessage = async () => {
+    if (messageToDelete !== null) {
+      const success = await deleteMessage(messageToDelete);
       if (success && selectedCommunityForMessages) {
         // Refresh messages
         const communityMessages = await fetchCommunityMessages(selectedCommunityForMessages.id);
         setMessages(communityMessages);
       }
+      setShowDeleteConfirm(false);
+      setMessageToDelete(null);
     }
+  };
+
+  const cancelDeleteMessage = () => {
+    setShowDeleteConfirm(false);
+    setMessageToDelete(null);
   };
 
   const filteredCommunities = communities.filter(community => {
@@ -508,6 +522,34 @@ const Discussions = () => {
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              Confirm Delete
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this message? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelDeleteMessage}
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteMessage}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
