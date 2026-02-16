@@ -6,12 +6,10 @@ import { useState, useEffect, useMemo } from "react";
 import { fetchUsers } from '../../services/usersServices'
 import type { User } from '../../services/usersServices'
 
-import { fetchSelfieVerificationByUserId } from "../../services/selfieVerificationServices";
-import type { SelfieVerification } from "../../services/selfieVerificationServices";
-
 const Users: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [usersData, setUsersData] = useState<(User & { selfieStatus?: string })[]>([]);
+  const [usersData, setUsersData] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,41 +18,13 @@ const Users: React.FC = () => {
   // Fetch ALL USERS
   useEffect(() => {
     const getUsers = async () => {
+      setIsLoading(true);
       const data = await fetchUsers();
-
       setUsersData(data);
+      setIsLoading(false);
     };
     getUsers();
   }, []);
-
-  // Fetch Selfie Verification for every user
-  useEffect(() => {
-    if (usersData.length === 0) return;
-
-    const fetchAllSelfieStatus = async () => {
-      const updated = await Promise.all(
-        usersData.map(async (user) => {
-          let selfie: SelfieVerification | null = null;
-
-          try {
-            selfie = await fetchSelfieVerificationByUserId(user.id);
-
-          } catch (err) {
-            console.error("Error fetching selfie:", err);
-          }
-
-          return {
-            ...user,
-            selfieStatus: selfie?.status || "Not Uploaded",
-          };
-        })
-      );
-
-      setUsersData(updated);
-    };
-
-    fetchAllSelfieStatus();
-  }, [usersData.length]);
 
   // Filter and paginate users
   const filteredUsers = useMemo(() => {
@@ -141,10 +111,6 @@ const Users: React.FC = () => {
                   <th className="px-6 py-3">Age Range</th>
                   <th className="px-6 py-3">Premium</th>
                   <th className="px-6 py-3">Profile</th>
-
-                  {/* NEW COLUMN */}
-                  <th className="px-6 py-3">Selfie Status</th>
-
                   <th className="px-6 py-3">Status</th>
                   {/* <th className="px-6 py-3">Last Seen</th> */}
                   <th className="px-6 py-3">Actions</th>
@@ -195,20 +161,6 @@ const Users: React.FC = () => {
                           }`}
                       >
                         {user.is_profile_complete ? "Complete" : "Incomplete"}
-                      </span>
-                    </td>
-
-                    {/* SELFIE STATUS COLUMN */}
-                    <td className="px-6 py-3">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.selfieStatus === "Approved"
-                          ? "bg-green-100 text-green-800"
-                          : user.selfieStatus === "Rejected"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
-                          }`}
-                      >
-                        {user.selfieStatus}
                       </span>
                     </td>
 
@@ -273,8 +225,8 @@ const Users: React.FC = () => {
                       <button
                         onClick={() => handlePageChange(page)}
                         className={`px-3 py-1 text-sm font-medium rounded-lg transition-colors ${currentPage === page
-                            ? "bg-blue-600 text-white"
-                            : "text-gray-700 hover:bg-gray-100"
+                          ? "bg-blue-600 text-white"
+                          : "text-gray-700 hover:bg-gray-100"
                           }`}
                       >
                         {page}

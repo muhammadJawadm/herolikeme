@@ -59,6 +59,7 @@ export interface UserProfile {
 
 /**
  * Fetches all users from the database with pagination
+ * Optimized to only fetch fields needed for the users table display
  * Supabase has a max limit of 1000 rows per request, so we fetch in batches
  */
 export const fetchUsers = async (): Promise<User[]> => {
@@ -70,7 +71,28 @@ export const fetchUsers = async (): Promise<User[]> => {
   while (hasMore) {
     const { data, error, count } = await supabase
       .from("users")
-      .select("*, user_profiles(*)", { count: 'exact' })
+      .select(`
+        id,
+        email,
+        name,
+        first_name,
+        last_name,
+        created_at,
+        last_updated,
+        login_via,
+        is_premium,
+        is_profile_complete,
+        is_online,
+        last_seen,
+        fcm_enabled,
+        user_profiles!inner(
+          id,
+          created_at,
+          gender,
+          age_range,
+          profile_images
+        )
+      `, { count: 'exact' })
       .range(start, start + PAGE_SIZE - 1)
       .order('created_at', { ascending: false });
 
@@ -80,7 +102,15 @@ export const fetchUsers = async (): Promise<User[]> => {
     }
 
     if (data && data.length > 0) {
-      allUsers.push(...data);
+      // Transform the data to match our User type (Supabase returns user_profiles as array)
+      const transformedData = data.map((user: any) => ({
+        ...user,
+        user_profiles: Array.isArray(user.user_profiles) && user.user_profiles.length > 0
+          ? user.user_profiles[0]
+          : user.user_profiles
+      }));
+
+      allUsers.push(...transformedData);
 
       if (data.length < PAGE_SIZE || allUsers.length >= (count || 0)) {
         hasMore = false;

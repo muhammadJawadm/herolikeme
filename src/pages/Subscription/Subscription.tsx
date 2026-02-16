@@ -1,20 +1,20 @@
 
 import { useState } from 'react';
 import Header from '../../layouts/partials/Header';
-import {  FiSearch, FiToggleLeft, FiToggleRight } from 'react-icons/fi';
+import { FiSearch, FiToggleLeft, FiToggleRight } from 'react-icons/fi';
 import SubscriptionModal from '../../components/SubscriptionModal';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-interface PlanProps{
+interface PlanProps {
   id: number,
-      name:string,
-      price: number,
-      duration:string,
-      features: string[],
-      isActive: boolean
+  name: string,
+  price: number,
+  duration: string,
+  features: string[],
+  isActive: boolean
 }
 const Subscription = () => {
 
-const initialPlans: PlanProps[] = [
+  const initialPlans: PlanProps[] = [
     {
       id: 1,
       name: "Basic",
@@ -103,8 +103,8 @@ const initialPlans: PlanProps[] = [
     setIsModalOpen(false);
   };
   return (
-      <div>
-      <Header header={"Manage Restaurant Subscriptions"} link='' />
+    <div>
+      <Header header={"Subscriptions"} link='' />
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-6">
         <div>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -120,14 +120,14 @@ const initialPlans: PlanProps[] = [
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-             <div className="">
-             <button
-          onClick={addNewPlan}
-          className="px-4 py-2 rounded-lg bg-secondary text-white cursor-pointer">
-           + Add New Plan
-          </button>
-            
-                        </div>
+            <div className="">
+              <button
+                onClick={addNewPlan}
+                className="px-4 py-2 rounded-lg bg-secondary text-white cursor-pointer">
+                + Add New Plan
+              </button>
+
+            </div>
           </div>
 
           <div className="my-3">
@@ -187,7 +187,7 @@ const initialPlans: PlanProps[] = [
         </div>
       </div>
       {isModalOpen && (
-      <SubscriptionModal setIsModalOpen={setIsModalOpen} handleSubmit={handleSubmit} isEditMode={isEditMode}/>
+        <SubscriptionModal setIsModalOpen={setIsModalOpen} handleSubmit={handleSubmit} isEditMode={isEditMode} />
       )}
     </div>
   )

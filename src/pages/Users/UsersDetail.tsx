@@ -3,31 +3,21 @@ import Header from "../../layouts/partials/Header";
 import { fetchUserById } from '../../services/usersServices';
 import type { User } from '../../services/usersServices';
 import { useParams } from "react-router-dom";
-import { 
-  fetchSelfieVerificationByUserId, 
-  updateSelfieVerificationStatus, 
-  type SelfieVerification 
-} from "../../services/selfieVerificationServices";
 import ProfileHeader from "../../components/UserProfile/ProfileHeader";
 import InfoCard from "../../components/UserProfile/InfoCard";
-import SelfieVerificationSection from "../../components/UserProfile/SelfieVerificationSection";
-import StatusUpdateModal from "../../components/UserProfile/StatusUpdateModal";
 import GallerySection from "../../components/UserProfile/GallerySection";
 import VoiceMessageSection from "../../components/UserProfile/VoiceMessageSection";
+import { fetchMutualMatches, type MutualMatch } from "../../services/userLikesServices";
+import { FaHeart } from "react-icons/fa";
 
 
 
 const UsersDetail = () => {
   const { id } = useParams();
   const [user, setUser] = useState<User>();
-  const [selfieVerification, setSelfieVerification] = useState<SelfieVerification | null>(null);
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [newStatus, setNewStatus] = useState<'pending' | 'verified' | 'rejected'>('pending');
-  const [adminNote, setAdminNote] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
-  
+  const [mutualMatches, setMutualMatches] = useState<MutualMatch[]>([]);
+
   useEffect(() => {
-    // console.log("User ID from params:", id);
     const getUser = async () => {
       if (id) {
         const data = await fetchUserById(id);
@@ -37,64 +27,26 @@ const UsersDetail = () => {
         }
       }
     };
-    
-    const getSelfieVerification = async () => {
+
+    const getMatches = async () => {
       if (id) {
-        console.log("Fetching selfie verification for user ID:", id);
-        const data = await fetchSelfieVerificationByUserId(id);
-        console.log("Selfie verification data:", data);
-        if (data) {
-          setSelfieVerification(data);
-          setAdminNote(data.admin_note || "");
-        } else {
-          console.log("No selfie verification found for this user");
-          setSelfieVerification(null);
-        }
+        const matches = await fetchMutualMatches(id);
+        setMutualMatches(matches);
+        console.log("Mutual matches:", matches);
       }
     };
-    
+
     getUser();
-    getSelfieVerification();
+    getMatches();
   }, [id]);
-  
-  const openStatusModal = () => {
-    if (selfieVerification) {
-      setNewStatus(selfieVerification.status);
-      setAdminNote(selfieVerification.admin_note || "");
-      setShowStatusModal(true);
-    }
-  };
-  
-  const handleStatusUpdate = async () => {
-    if (!selfieVerification) return;
-    
-    setIsUpdating(true);
-    const result = await updateSelfieVerificationStatus(
-      selfieVerification.id,
-      newStatus,
-      adminNote
-    );
-    
-    if (result) {
-      setSelfieVerification(result);
-      setShowStatusModal(false);
-    }
-    setIsUpdating(false);
-  };
-  
-  const handleCloseModal = () => {
-    setShowStatusModal(false);
-    if (selfieVerification) {
-      setNewStatus(selfieVerification.status);
-      setAdminNote(selfieVerification.admin_note || "");
-    }
-  };
-  
+
+
+
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header header={"Manage Users"} link="" />
-      
+
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-8 py-6">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Profile Header */}
@@ -103,7 +55,7 @@ const UsersDetail = () => {
           {/* Main Content */}
           <div className="p-6 md:p-8">
             {/* User Info Grid */}
-             <div className="mb-8">
+            <div className="mb-8">
               <h3 className="text-xl font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">
                 Bio
               </h3>
@@ -134,7 +86,7 @@ const UsersDetail = () => {
             {/* Personal Information */}
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">Personal Information</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <InfoCard label="First Name" value={user?.first_name} />
                 <InfoCard label="Last Name" value={user?.last_name} />
@@ -159,11 +111,62 @@ const UsersDetail = () => {
               </div>
             </div>
 
-            {/* Selfie Verification Section */}
-            <SelfieVerificationSection
-              selfieVerification={selfieVerification}
-              onOpenStatusModal={openStatusModal}
-            />
+            {/* Mutual Matches Section */}
+            <div className="mb-8">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                Mutual Matches
+              </h3>
+
+              {/* Match Count Card */}
+              <div className="bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl shadow-lg p-6 text-white mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-pink-100 text-sm font-medium mb-1">Total Matches</p>
+                    <h3 className="text-4xl font-bold">{mutualMatches.length}</h3>
+                  </div>
+                  <div className="bg-white/20 rounded-full p-4">
+                    <FaHeart className="w-8 h-8" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Matched Users List */}
+              {mutualMatches.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {mutualMatches.map((match) => (
+                    <div
+                      key={match.userId}
+                      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={
+                            match.user?.user_profiles?.profile_images?.[0] ||
+                            '/placeholder-avatar.png'
+                          }
+                          alt={match.user?.name || 'User'}
+                          className="w-12 h-12 rounded-full object-cover ring-2 ring-pink-200"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-800">
+                            {match.user?.name ||
+                              `${match.user?.first_name || ''} ${match.user?.last_name || ''}`.trim() ||
+                              'Unknown User'}
+                          </h4>
+                          <p className="text-sm text-gray-500">{match.user?.email || 'No email'}</p>
+                        </div>
+                        <FaHeart className="text-pink-500 w-5 h-5" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  <FaHeart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No mutual matches yet</p>
+                </div>
+              )}
+            </div>
 
             {/* Gallery Section */}
             <GallerySection images={user?.user_profiles?.profile_images} />
@@ -173,20 +176,6 @@ const UsersDetail = () => {
           </div>
         </div>
       </div>
-      
-      {/* Status Update Modal */}
-      <StatusUpdateModal
-        isOpen={showStatusModal}
-        selfieVerification={selfieVerification}
-        user={user}
-        newStatus={newStatus}
-        adminNote={adminNote}
-        isUpdating={isUpdating}
-        onClose={handleCloseModal}
-        onStatusChange={setNewStatus}
-        onAdminNoteChange={setAdminNote}
-        onUpdate={handleStatusUpdate}
-      />
     </div>
   )
 }

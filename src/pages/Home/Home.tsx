@@ -10,6 +10,7 @@ import { fetchQuotes } from "../../services/quoteServices";
 import { fetchFeedback } from "../../services/feedbackServices";
 import { fetchCommunities } from "../../services/communityServices";
 import { fetchNotifications } from "../../services/notificationServices";
+import { fetchAllSelfieVerifications } from "../../services/selfieVerificationServices";
 
 interface MonthlyBookingData {
   users: number[];
@@ -26,6 +27,7 @@ interface DashboardStats {
   premiumUsers: number;
   onlineUsers: number;
   completedProfiles: number;
+  verifiedSelfies: number;
   newUsersThisWeek: number;
   newPremiumUsersThisWeek: number;
 }
@@ -41,6 +43,7 @@ const Home: React.FC = () => {
     premiumUsers: 0,
     onlineUsers: 0,
     completedProfiles: 0,
+    verifiedSelfies: 0,
     newUsersThisWeek: 0,
     newPremiumUsersThisWeek: 0,
   });
@@ -73,12 +76,13 @@ const Home: React.FC = () => {
     setIsLoading(true);
     try {
       // Fetch all data
-      const [users, quotes, feedback, communities, notifications] = await Promise.all([
+      const [users, quotes, feedback, communities, notifications, selfieVerifications] = await Promise.all([
         fetchUsers(),
         fetchQuotes(),
         fetchFeedback(),
         fetchCommunities(),
         fetchNotifications(),
+        fetchAllSelfieVerifications(),
       ]);
       console.log(users);
 
@@ -97,6 +101,11 @@ const Home: React.FC = () => {
         return userCreatedDate >= sevenDaysAgo && u.is_premium;
       }).length;
 
+      // Count verified selfies
+      const verifiedSelfiesCount = selfieVerifications.filter(
+        (selfie) => selfie.status === 'verified'
+      ).length;
+
       setStats({
         totalUsers: users.length,
         totalQuotes: quotes.length,
@@ -106,6 +115,7 @@ const Home: React.FC = () => {
         premiumUsers: users.filter(u => u.is_premium).length,
         onlineUsers: users.filter(u => u.is_online).length,
         completedProfiles: users.filter(u => u.is_profile_complete).length,
+        verifiedSelfies: verifiedSelfiesCount,
         newUsersThisWeek,
         newPremiumUsersThisWeek,
       });
@@ -283,8 +293,8 @@ const Home: React.FC = () => {
           <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-green-100 text-sm font-medium mb-1">Verified Profiles</p>
-                <h3 className="text-3xl font-bold">{stats.completedProfiles}</h3>
+                <p className="text-green-100 text-sm font-medium mb-1">Verified Selfies</p>
+                <h3 className="text-3xl font-bold">{stats.verifiedSelfies}</h3>
               </div>
               <div className="bg-white/20 rounded-full p-3">
                 <FaUser className="w-6 h-6" />
