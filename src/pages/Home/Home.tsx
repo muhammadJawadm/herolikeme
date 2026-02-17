@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaCommentDots, FaRegCommentDots, FaUser, FaHeart } from "react-icons/fa";
+import { FaCommentDots, FaUser, FaHeart } from "react-icons/fa";
 import Header from "../../layouts/partials/Header";
 import ChartOne from "../../components/ChartOne";
 import { MdPayment, MdSubscriptions } from "react-icons/md";
