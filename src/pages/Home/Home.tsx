@@ -255,7 +255,7 @@ const Home: React.FC = () => {
             title="Matches"
             count={stats.totalMatches.toString()}
             icon={FaHeart}
-            link="/users"
+            link="/"
             subtitle="Total Matches"
           />
           <Card
