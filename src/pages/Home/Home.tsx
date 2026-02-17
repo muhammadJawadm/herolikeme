@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { FaCommentDots, FaRegCommentDots, FaUser } from "react-icons/fa";
+import { FaCommentDots, FaRegCommentDots, FaUser, FaHeart } from "react-icons/fa";
 import Header from "../../layouts/partials/Header";
 import ChartOne from "../../components/ChartOne";
 import { MdPayment, MdSubscriptions } from "react-icons/md";
@@ -8,6 +8,7 @@ import PieChartBox from "../../components/PieChartBox";
 import { fetchUsers } from "../../services/usersServices";
 import { fetchQuotes } from "../../services/quoteServices";
 import { fetchFeedback } from "../../services/feedbackServices";
+import { fetchAllMatchesCount } from "../../services/userLikesServices";
 import { fetchCommunities } from "../../services/communityServices";
 import { fetchNotifications } from "../../services/notificationServices";
 import { fetchAllSelfieVerifications } from "../../services/selfieVerificationServices";
@@ -22,6 +23,7 @@ interface DashboardStats {
   totalUsers: number;
   totalQuotes: number;
   totalFeedback: number;
+  totalMatches: number;
   totalDiscussions: number;
   totalNotifications: number;
   premiumUsers: number;
@@ -38,6 +40,7 @@ const Home: React.FC = () => {
     totalUsers: 0,
     totalQuotes: 0,
     totalFeedback: 0,
+    totalMatches: 0,
     totalDiscussions: 0,
     totalNotifications: 0,
     premiumUsers: 0,
@@ -76,13 +79,14 @@ const Home: React.FC = () => {
     setIsLoading(true);
     try {
       // Fetch all data
-      const [users, quotes, feedback, communities, notifications, selfieVerifications] = await Promise.all([
+      const [users, quotes, feedback, communities, notifications, selfieVerifications, totalMatches] = await Promise.all([
         fetchUsers(),
         fetchQuotes(),
         fetchFeedback(),
         fetchCommunities(),
         fetchNotifications(),
         fetchAllSelfieVerifications(),
+        fetchAllMatchesCount(),
       ]);
       console.log(users);
 
@@ -110,6 +114,7 @@ const Home: React.FC = () => {
         totalUsers: users.length,
         totalQuotes: quotes.length,
         totalFeedback: feedback.length,
+        totalMatches: totalMatches,
         totalDiscussions: communities.length,
         totalNotifications: notifications.length,
         premiumUsers: users.filter(u => u.is_premium).length,
@@ -247,11 +252,11 @@ const Home: React.FC = () => {
             subtitle={`${stats.onlineUsers} online`}
           />
           <Card
-            title="Feedback"
-            count={stats.totalFeedback.toString()}
-            icon={FaRegCommentDots}
-            link="/feedback"
-            subtitle="User feedback"
+            title="Matches"
+            count={stats.totalMatches.toString()}
+            icon={FaHeart}
+            link="/users"
+            subtitle="Total Matches"
           />
           <Card
             title="Communities"

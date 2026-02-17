@@ -105,3 +105,59 @@ export const fetchMutualMatchesCount = async (userId: string): Promise<number> =
     const matches = await fetchMutualMatches(userId);
     return matches.length;
 };
+
+/**
+ * 
+ * Get the total count of all mutual matches in the system
+ */
+export const fetchAllMatchesCount = async (): Promise<number> => {
+    try {
+        const { data: allLikes, error } = await supabase
+            .from("user_likes")
+            .select("uid, liked_by");
+
+        if (error) {
+            console.error("Error fetching all likes:", error);
+            return 0;
+        }
+
+        if (!allLikes || allLikes.length === 0) {
+            return 0;
+        }
+
+        // Create a set of "sender-receiver" strings for fast lookup
+        // Format: "senderId-receiverId"
+        const likesSet = new Set<string>();
+        allLikes.forEach(like => {
+            likesSet.add(`${like.liked_by}-${like.uid}`);
+        });
+
+        let matchesCount = 0;
+        const processedPairs = new Set<string>();
+
+        allLikes.forEach(like => {
+            const userA = like.liked_by;
+            const userB = like.uid;
+
+            // Ensure we only count each pair once by ordering IDs
+            // We use a unique key for the pair, regardless of who liked whom first
+            const pairKey = userA < userB ? `${userA}-${userB}` : `${userB}-${userA}`;
+
+            if (processedPairs.has(pairKey)) {
+                return;
+            }
+
+            // Check if the reciprocal like exists
+            // If A liked B, did B like A?
+            if (likesSet.has(`${userB}-${userA}`)) {
+                matchesCount++;
+                processedPairs.add(pairKey);
+            }
+        });
+
+        return matchesCount;
+    } catch (error) {
+        console.error("Error in fetchAllMatchesCount:", error);
+        return 0;
+    }
+};
