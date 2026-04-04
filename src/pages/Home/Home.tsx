@@ -88,7 +88,6 @@ const Home: React.FC = () => {
         fetchAllSelfieVerifications(),
         fetchAllMatchesCount(),
       ]);
-      console.log(users);
 
       // Calculate basic stats
       // Get users from last 7 days

@@ -90,7 +90,9 @@ export const fetchUsers = async (): Promise<User[]> => {
           created_at,
           gender,
           age_range,
-          profile_images
+          profile_images,
+          is_cancer,
+          is_other_chronic
         )
       `, { count: 'exact' })
       .range(start, start + PAGE_SIZE - 1)

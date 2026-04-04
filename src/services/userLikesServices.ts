@@ -107,53 +107,62 @@ export const fetchMutualMatchesCount = async (userId: string): Promise<number> =
 };
 
 /**
- * 
- * Get the total count of all mutual matches in the system
+ * Get the total count of all mutual matches in the system.
+ * Fetches all rows in paginated batches to avoid the server-side row limit
+ * that silently truncates a single large query.
  */
 export const fetchAllMatchesCount = async (): Promise<number> => {
     try {
-        const { data: allLikes, error } = await supabase
-            .from("user_likes")
-            .select("uid, liked_by");
+        const PAGE_SIZE = 1000;
+        const allLikes: { uid: string; liked_by: string }[] = [];
+        let from = 0;
 
-        if (error) {
-            console.error("Error fetching all likes:", error);
-            return 0;
+        // Keep fetching pages until a page comes back with fewer rows than PAGE_SIZE
+        while (true) {
+            const { data, error } = await supabase
+                .from("user_likes")
+                .select("uid, liked_by")
+                .range(from, from + PAGE_SIZE - 1);
+
+            if (error) {
+                console.error("Error fetching likes page:", error);
+                return 0;
+            }
+
+            if (data && data.length > 0) {
+                allLikes.push(...data);
+            }
+
+            // Last page reached
+            if (!data || data.length < PAGE_SIZE) break;
+
+            from += PAGE_SIZE;
         }
 
-        if (!allLikes || allLikes.length === 0) {
-            return 0;
-        }
+        if (allLikes.length === 0) return 0;
 
-        // Create a set of "sender-receiver" strings for fast lookup
-        // Format: "senderId-receiverId"
-        const likesSet = new Set<string>();
-        allLikes.forEach(like => {
-            likesSet.add(`${like.liked_by}-${like.uid}`);
-        });
+        // Build a fast-lookup set of "liked_by-uid" pairs
+        const likesSet = new Set<string>(
+            allLikes.map(like => `${like.liked_by}-${like.uid}`)
+        );
 
         let matchesCount = 0;
         const processedPairs = new Set<string>();
 
-        allLikes.forEach(like => {
+        for (const like of allLikes) {
             const userA = like.liked_by;
             const userB = like.uid;
 
-            // Ensure we only count each pair once by ordering IDs
-            // We use a unique key for the pair, regardless of who liked whom first
+            // Canonical key so each pair is only counted once
             const pairKey = userA < userB ? `${userA}-${userB}` : `${userB}-${userA}`;
+            if (processedPairs.has(pairKey)) continue;
 
-            if (processedPairs.has(pairKey)) {
-                return;
-            }
-
-            // Check if the reciprocal like exists
-            // If A liked B, did B like A?
+            // Mutual match: B also liked A
             if (likesSet.has(`${userB}-${userA}`)) {
                 matchesCount++;
                 processedPairs.add(pairKey);
             }
-        });
+        }
 
         return matchesCount;
     } catch (error) {
