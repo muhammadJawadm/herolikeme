@@ -85,7 +85,8 @@ export const fetchUsers = async (): Promise<User[]> => {
         is_online,
         last_seen,
         fcm_enabled,
-        user_profiles!inner(
+        fcm_token,
+        user_profiles(
           id,
           created_at,
           gender,
@@ -105,12 +106,12 @@ export const fetchUsers = async (): Promise<User[]> => {
 
     if (data && data.length > 0) {
       // Transform the data to match our User type (Supabase returns user_profiles as array)
-      const transformedData = data.map((user: any) => ({
+      const transformedData = data.map((user) => ({
         ...user,
         user_profiles: Array.isArray(user.user_profiles) && user.user_profiles.length > 0
           ? user.user_profiles[0]
-          : user.user_profiles
-      }));
+          : user.user_profiles ?? undefined
+      } as User));
 
       allUsers.push(...transformedData);
 
