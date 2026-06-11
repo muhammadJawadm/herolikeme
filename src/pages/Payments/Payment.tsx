@@ -55,7 +55,7 @@ const Payment = () => {
       .select("id, plan_name, price, currency")
       .in("id", planIds);
 
-    // merge
+    
     const emailMap: Record<string, string> = {};
     users?.forEach((u) => { emailMap[u.id] = u.email; });
 
